@@ -1,5 +1,0 @@
-@api_HostAddress = https://localhost:7019
-
-### Get OpenAPI Specification
-GET {{api_HostAddress}}/openapi/v1.json
-Accept: application/json
