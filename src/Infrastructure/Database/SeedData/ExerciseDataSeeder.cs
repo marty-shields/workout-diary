@@ -10,19 +10,16 @@ public static class ExerciseDataSeeder
     public static void SeedListFromJson(string jsonFilePath, DbContext context)
     {
         using var stream = new FileStream(jsonFilePath, FileMode.Open, FileAccess.Read);
-        var deserializedData = JsonSerializer.Deserialize<List<Exercise>>(
+        var exerciseData = JsonSerializer.Deserialize<List<Exercise>>(
             stream,
             new JsonSerializerOptions
             {
                 PropertyNameCaseInsensitive = true
             });
 
-        if (deserializedData != null)
+        if (ExercideDataExists(exerciseData))
         {
-            foreach (var data in deserializedData)
-            {
-                context.Set<Exercise>().Add(data);
-            }
+            context.Set<Exercise>().AddRange(exerciseData!);
         }
 
         context.SaveChanges();
@@ -36,13 +33,14 @@ public static class ExerciseDataSeeder
             GetJsonSerializerOptions(),
             cancellationToken);
 
-        foreach (var exercise in exerciseData!)
+        if (ExercideDataExists(exerciseData))
         {
-            context.Set<Exercise>().Add(exercise);
+            await context.Set<Exercise>().AddRangeAsync(exerciseData!, cancellationToken);
+            await context.SaveChangesAsync(cancellationToken);
         }
-
-        await context.SaveChangesAsync(cancellationToken);
     }
+
+    private static bool ExercideDataExists(List<Exercise>? exerciseData) => exerciseData is not null && exerciseData.Any();
 
     public static JsonSerializerOptions GetJsonSerializerOptions()
     {
@@ -51,6 +49,8 @@ public static class ExerciseDataSeeder
             PropertyNameCaseInsensitive = true
         };
         jsonSerializerOptions.Converters.Add(new EquipmentEnumTypeConverter());
+        jsonSerializerOptions.Converters.Add(new MuscleEnumTypeConverter());
+        jsonSerializerOptions.Converters.Add(new CategoryEnumTypeConverter());
         jsonSerializerOptions.Converters.Add(new JsonStringEnumConverter(JsonNamingPolicy.CamelCase, allowIntegerValues: false));
         return jsonSerializerOptions;
     }
