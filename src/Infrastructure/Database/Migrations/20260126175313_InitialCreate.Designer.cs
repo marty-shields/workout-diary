@@ -8,10 +8,10 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
 
-namespace Infrastructure.Database.Migrations
+namespace Infrastructure.Migrations
 {
     [DbContext(typeof(WorkoutContext))]
-    [Migration("20260125090158_InitialCreate")]
+    [Migration("20260126175313_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -22,9 +22,9 @@ namespace Infrastructure.Database.Migrations
 
             modelBuilder.Entity("Infrastructure.Database.Tables.Exercise", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("TEXT");
 
                     b.Property<int>("Category")
                         .HasColumnType("INTEGER");
@@ -59,17 +59,14 @@ namespace Infrastructure.Database.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("Name")
-                        .IsUnique();
-
                     b.ToTable("Exercises");
                 });
 
             modelBuilder.Entity("Infrastructure.Database.Tables.Workout", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("Notes")
                         .HasColumnType("TEXT");
@@ -85,14 +82,14 @@ namespace Infrastructure.Database.Migrations
                     b.ToTable("Workouts");
                 });
 
-            modelBuilder.Entity("Infrastructure.Database.Tables.WorkoutExercise", b =>
+            modelBuilder.Entity("Infrastructure.Database.Tables.WorkoutActivity", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("TEXT");
 
-                    b.Property<int>("ExerciseId")
-                        .HasColumnType("INTEGER");
+                    b.Property<Guid>("ExerciseId")
+                        .HasColumnType("TEXT");
 
                     b.Property<int>("Repetitions")
                         .HasColumnType("INTEGER");
@@ -100,8 +97,8 @@ namespace Infrastructure.Database.Migrations
                     b.Property<double>("WeightKg")
                         .HasColumnType("REAL");
 
-                    b.Property<int>("WorkoutId")
-                        .HasColumnType("INTEGER");
+                    b.Property<Guid>("WorkoutId")
+                        .HasColumnType("TEXT");
 
                     b.HasKey("Id");
 
@@ -109,10 +106,10 @@ namespace Infrastructure.Database.Migrations
 
                     b.HasIndex("WorkoutId");
 
-                    b.ToTable("WorkoutExercises");
+                    b.ToTable("WorkoutActivities");
                 });
 
-            modelBuilder.Entity("Infrastructure.Database.Tables.WorkoutExercise", b =>
+            modelBuilder.Entity("Infrastructure.Database.Tables.WorkoutActivity", b =>
                 {
                     b.HasOne("Infrastructure.Database.Tables.Exercise", "Exercise")
                         .WithMany()
@@ -121,7 +118,7 @@ namespace Infrastructure.Database.Migrations
                         .IsRequired();
 
                     b.HasOne("Infrastructure.Database.Tables.Workout", "Workout")
-                        .WithMany("WorkoutExercises")
+                        .WithMany("WorkoutActivities")
                         .HasForeignKey("WorkoutId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -133,7 +130,7 @@ namespace Infrastructure.Database.Migrations
 
             modelBuilder.Entity("Infrastructure.Database.Tables.Workout", b =>
                 {
-                    b.Navigation("WorkoutExercises");
+                    b.Navigation("WorkoutActivities");
                 });
 #pragma warning restore 612, 618
         }

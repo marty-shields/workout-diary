@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace Infrastructure.Database.Migrations
+namespace Infrastructure.Migrations
 {
     /// <inheritdoc />
     public partial class InitialCreate : Migration
@@ -15,8 +15,7 @@ namespace Infrastructure.Database.Migrations
                 name: "Exercises",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "INTEGER", nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
+                    Id = table.Column<Guid>(type: "TEXT", nullable: false),
                     Name = table.Column<string>(type: "TEXT", maxLength: 500, nullable: false),
                     Force = table.Column<int>(type: "INTEGER", nullable: true),
                     Level = table.Column<int>(type: "INTEGER", nullable: false),
@@ -36,8 +35,7 @@ namespace Infrastructure.Database.Migrations
                 name: "Workouts",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "INTEGER", nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
+                    Id = table.Column<Guid>(type: "TEXT", nullable: false),
                     Notes = table.Column<string>(type: "TEXT", nullable: true),
                     TotalDurationMinutes = table.Column<int>(type: "INTEGER", nullable: false),
                     WorkoutDate = table.Column<DateTime>(type: "TEXT", nullable: false)
@@ -48,27 +46,26 @@ namespace Infrastructure.Database.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "WorkoutExercises",
+                name: "WorkoutActivities",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "INTEGER", nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
+                    Id = table.Column<Guid>(type: "TEXT", nullable: false),
                     Repetitions = table.Column<int>(type: "INTEGER", nullable: false),
                     WeightKg = table.Column<double>(type: "REAL", nullable: false),
-                    WorkoutId = table.Column<int>(type: "INTEGER", nullable: false),
-                    ExerciseId = table.Column<int>(type: "INTEGER", nullable: false)
+                    WorkoutId = table.Column<Guid>(type: "TEXT", nullable: false),
+                    ExerciseId = table.Column<Guid>(type: "TEXT", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_WorkoutExercises", x => x.Id);
+                    table.PrimaryKey("PK_WorkoutActivities", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_WorkoutExercises_Exercises_ExerciseId",
+                        name: "FK_WorkoutActivities_Exercises_ExerciseId",
                         column: x => x.ExerciseId,
                         principalTable: "Exercises",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_WorkoutExercises_Workouts_WorkoutId",
+                        name: "FK_WorkoutActivities_Workouts_WorkoutId",
                         column: x => x.WorkoutId,
                         principalTable: "Workouts",
                         principalColumn: "Id",
@@ -76,19 +73,13 @@ namespace Infrastructure.Database.Migrations
                 });
 
             migrationBuilder.CreateIndex(
-                name: "IX_Exercises_Name",
-                table: "Exercises",
-                column: "Name",
-                unique: true);
-
-            migrationBuilder.CreateIndex(
-                name: "IX_WorkoutExercises_ExerciseId",
-                table: "WorkoutExercises",
+                name: "IX_WorkoutActivities_ExerciseId",
+                table: "WorkoutActivities",
                 column: "ExerciseId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_WorkoutExercises_WorkoutId",
-                table: "WorkoutExercises",
+                name: "IX_WorkoutActivities_WorkoutId",
+                table: "WorkoutActivities",
                 column: "WorkoutId");
         }
 
@@ -96,7 +87,7 @@ namespace Infrastructure.Database.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "WorkoutExercises");
+                name: "WorkoutActivities");
 
             migrationBuilder.DropTable(
                 name: "Exercises");

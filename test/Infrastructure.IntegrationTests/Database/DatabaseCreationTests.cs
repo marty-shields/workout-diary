@@ -1,7 +1,6 @@
 using System.Text.Json;
 using Infrastructure.Database;
 using Infrastructure.Database.SeedData;
-using Infrastructure.Database.Tables;
 using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.IntegrationTests.Database;
@@ -41,16 +40,17 @@ public class DatabaseCreationTests
         await context.Database.EnsureCreatedAsync();
 
         using var stream = new FileStream(filePath, FileMode.Open, FileAccess.Read);
-        var expectedExercises = await JsonSerializer.DeserializeAsync<List<Exercise>>(
+        var expectedExercises = await JsonSerializer.DeserializeAsync<List<ExerciseDataSeeder.Exercise>>(
             stream,
             ExerciseDataSeeder.GetJsonSerializerOptions());
         Assert.That(expectedExercises, Is.Not.Null);
         Assert.That(expectedExercises.Count, Is.EqualTo(1));
 
-        var expectedExercise = expectedExercises[0];
+        var expectedExercise = expectedExercises[0].ToTable();
         var actualExercise = await context.Exercises.Where(e => e.Name == expectedExercise.Name).FirstOrDefaultAsync();
 
         Assert.That(actualExercise, Is.Not.Null);
+        Assert.That(actualExercise.Id, Is.EqualTo(expectedExercise.Id));
         Assert.That(actualExercise.Name, Is.EqualTo(expectedExercise.Name));
         Assert.That(actualExercise.Force, Is.EqualTo(expectedExercise.Force));
         Assert.That(actualExercise.Level, Is.EqualTo(expectedExercise.Level));

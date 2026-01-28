@@ -1,5 +1,9 @@
+using Api.Models.Workouts;
+using Core.ExtensionMethods;
+using Core.Services.Workouts;
 using Infrastructure.Database;
-using Infrastructure.Database.SeedData;
+using Infrastructure.Database.ExtensionMethods;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
@@ -7,25 +11,30 @@ builder.Services.AddValidation();
 builder.Services.AddDbContext<WorkoutContext>(options =>
 {
     options.UseSqlite(builder.Configuration.GetConnectionString("WorkoutContext"));
-    var exerciseDataFilePath = builder.Configuration.GetValue<string>("DatabaseSeeding:ExerciseDataFilePath");
-    if (!string.IsNullOrEmpty(exerciseDataFilePath))
-    {
-        options.UseAsyncSeeding(async (context, _, cancellationToken) =>
-            await ExerciseDataSeeder.SeedListFromJsonAsync(exerciseDataFilePath, context, cancellationToken));
-    }
-
 });
+builder.Services.AddRepositories();
+builder.Services.AddServices();
 
 WebApplication app = builder.Build();
 app.UseHttpsRedirection();
-using (var scope = app.Services.CreateScope())
+
+app.MapPost("/workouts", async (
+    [FromServices] IWorkoutCreationService workoutCreationService,
+    [FromBody] WorkoutRequest request,
+    CancellationToken cancellationToken) =>
 {
-    using var context = scope.ServiceProvider.GetRequiredService<WorkoutContext>();
-    if (app.Environment.IsDevelopment())
+    var result = await workoutCreationService.CreateWorkoutAsync(request.ToWorkoutCreationServiceRequest(), cancellationToken);
+    if (!result.IsSuccess)
     {
-        await context.Database.EnsureDeletedAsync();
+        return Results.ValidationProblem(new Dictionary<string, string[]>
+        {
+            { "Exercises", new[] { result.Error!.Message } }
+        });
     }
-    await context.Database.MigrateAsync();
-}
+
+    return Results.Created();
+})
+.Produces(StatusCodes.Status201Created)
+.ProducesValidationProblem();
 
 app.Run();

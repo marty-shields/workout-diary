@@ -7,7 +7,7 @@ public class WorkoutContext : DbContext
 {
     public DbSet<Exercise> Exercises { get; set; }
     public DbSet<Workout> Workouts { get; set; }
-    public DbSet<WorkoutExercise> WorkoutExercises { get; set; }
+    public DbSet<WorkoutActivity> WorkoutActivities { get; set; }
 
     public WorkoutContext(DbContextOptions<WorkoutContext> options)
         : base(options)

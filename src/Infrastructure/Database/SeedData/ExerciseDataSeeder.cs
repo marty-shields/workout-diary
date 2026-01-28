@@ -1,6 +1,8 @@
+using System.Security.Cryptography;
+using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using Infrastructure.Database.Tables;
+using Core.ValueObjects.Exercise;
 using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.Database.SeedData;
@@ -19,7 +21,7 @@ public static class ExerciseDataSeeder
 
         if (ExercideDataExists(exerciseData))
         {
-            context.Set<Exercise>().AddRange(exerciseData!);
+            context.Set<Tables.Exercise>().AddRange(exerciseData!.Select(e => e.ToTable()));
         }
 
         context.SaveChanges();
@@ -35,7 +37,7 @@ public static class ExerciseDataSeeder
 
         if (ExercideDataExists(exerciseData))
         {
-            await context.Set<Exercise>().AddRangeAsync(exerciseData!, cancellationToken);
+            await context.Set<Tables.Exercise>().AddRangeAsync(exerciseData!.Select(e => e.ToTable()), cancellationToken);
             await context.SaveChangesAsync(cancellationToken);
         }
     }
@@ -54,4 +56,39 @@ public static class ExerciseDataSeeder
         jsonSerializerOptions.Converters.Add(new JsonStringEnumConverter(JsonNamingPolicy.CamelCase, allowIntegerValues: false));
         return jsonSerializerOptions;
     }
+
+    public class Exercise
+    {
+        public required string Name { get; set; }
+        public Force? Force { get; set; }
+        public required Level Level { get; set; }
+        public Mechanic? Mechanic { get; set; }
+        public Equipment? Equipment { get; set; }
+        public required ICollection<Muscle> PrimaryMuscles { get; set; }
+        public ICollection<Muscle>? SecondaryMuscles { get; set; }
+        public required ICollection<string> Instructions { get; set; }
+        public required Category Category { get; set; }
+
+        public Tables.Exercise ToTable()
+        {
+            using MD5 md5 = MD5.Create();
+            byte[] hash = md5.ComputeHash(Encoding.UTF8.GetBytes(Name));
+            Guid id = new Guid(hash);
+
+            return new Tables.Exercise
+            {
+                Id = id,
+                Name = Name,
+                Force = Force,
+                Level = Level,
+                Mechanic = Mechanic,
+                Equipment = Equipment,
+                PrimaryMuscles = PrimaryMuscles,
+                SecondaryMuscles = SecondaryMuscles,
+                Instructions = Instructions,
+                Category = Category
+            };
+        }
+    }
+
 }

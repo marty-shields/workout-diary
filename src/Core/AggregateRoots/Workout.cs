@@ -1,0 +1,12 @@
+using Core.Entities;
+
+namespace Core.AggregateRoots;
+
+public class Workout
+{
+    public required Guid Id { get; init; }
+    public string? Notes { get; init; }
+    public required int TotalDurationMinutes { get; init; }
+    public required DateTime WorkoutDate { get; init; }
+    public required IEnumerable<WorkoutActivity> WorkoutActivities { get; init; }
+}
