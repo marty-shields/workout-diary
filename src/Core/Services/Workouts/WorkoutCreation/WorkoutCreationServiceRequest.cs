@@ -14,7 +14,6 @@ public class WorkoutCreationServiceRequest
         var activities = WorkoutActivities.GroupBy(wa => wa.ExerciseId)
             .Select(g => new Entities.WorkoutActivity
             {
-                Id = Guid.NewGuid(),
                 Exercise = exercisesInDb.First(e => e.Id == g.Key),
                 Sets = g.Select(wa => new ValueObjects.Workout.WorkoutSet
                 {

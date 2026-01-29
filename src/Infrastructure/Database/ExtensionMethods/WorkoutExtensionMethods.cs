@@ -19,7 +19,6 @@ public static class WorkoutExtensionMethods
                     .GroupBy(activity => activity.ExerciseId)
                     .Select(group => new Core.Entities.WorkoutActivity
                     {
-                        Id = group.First().Id,
                         Exercise = group.First().Exercise.ToEntity(),
                         Sets = group.Select(activity => new Core.ValueObjects.Workout.WorkoutSet
                         {

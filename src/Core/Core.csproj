@@ -9,9 +9,10 @@
   <ItemGroup>
     <Folder Include="Entities/" />
     <Folder Include="ExtensionMethods/" />
+    <Folder Include="Queries/" />
+    <Folder Include="Queries/Workouts/" />
+    <Folder Include="Queries/Workouts/GetWorkoutByIdQuery/" />
     <Folder Include="Repositories/" />
-    <Folder Include="Services/" />
-    <Folder Include="Services/Workouts/" />
     <Folder Include="ValueObjects/Workout/" />
   </ItemGroup>
 

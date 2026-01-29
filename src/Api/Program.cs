@@ -1,5 +1,6 @@
 using Api.Models.Workouts;
 using Core.ExtensionMethods;
+using Core.Queries.Workouts.GetWorkoutByIdQuery;
 using Core.Services.Workouts;
 using Infrastructure.Database;
 using Infrastructure.Database.ExtensionMethods;
@@ -14,6 +15,7 @@ builder.Services.AddDbContext<WorkoutContext>(options =>
 });
 builder.Services.AddRepositories();
 builder.Services.AddServices();
+builder.Services.AddQueries();
 
 WebApplication app = builder.Build();
 app.UseHttpsRedirection();
@@ -32,9 +34,21 @@ app.MapPost("/workouts", async (
         });
     }
 
-    return Results.Created();
-})
-.Produces(StatusCodes.Status201Created)
-.ProducesValidationProblem();
+    return Results.Created($"/workouts/{result.Value!.Id}", WorkoutResponse.FromEntity(result.Value!));
+});
+
+app.MapGet("/workouts/{workoutId:guid}", async (
+    [FromServices] IGetWorkoutByIdQuery getWorkoutByIdQuery,
+    [FromRoute] Guid workoutId,
+    CancellationToken cancellationToken) =>
+{
+    var result = await getWorkoutByIdQuery.ExecuteAsync(workoutId, cancellationToken);
+    if (!result.IsSuccess)
+    {
+        return Results.NotFound();
+    }
+
+    return Results.Ok(WorkoutResponse.FromEntity(result.Value!));
+});
 
 app.Run();
