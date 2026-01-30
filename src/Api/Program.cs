@@ -1,11 +1,8 @@
 using System.Text.Json.Serialization;
-using Api.Models.Workouts;
+using Api.Extensions;
 using Core.ExtensionMethods;
-using Core.Queries.Workouts.GetWorkoutByIdQuery;
-using Core.Services.Workouts;
 using Infrastructure.Database;
 using Infrastructure.Database.ExtensionMethods;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Scalar.AspNetCore;
 
@@ -36,35 +33,6 @@ if (app.Environment.IsDevelopment())
     app.MapScalarApiReference();
 }
 
-app.MapPost("/workouts", async (
-    [FromServices] IWorkoutCreationService workoutCreationService,
-    [FromBody] WorkoutRequest request,
-    CancellationToken cancellationToken) =>
-{
-    var result = await workoutCreationService.CreateWorkoutAsync(request.ToWorkoutCreationServiceRequest(), cancellationToken);
-    if (!result.IsSuccess)
-    {
-        return Results.ValidationProblem(new Dictionary<string, string[]>
-        {
-            { "Exercises", new[] { result.Error!.Message } }
-        });
-    }
-
-    return Results.Created($"/workouts/{result.Value!.Id}", WorkoutResponse.FromEntity(result.Value!));
-});
-
-app.MapGet("/workouts/{workoutId:guid}", async (
-    [FromServices] IGetWorkoutByIdQuery getWorkoutByIdQuery,
-    [FromRoute] Guid workoutId,
-    CancellationToken cancellationToken) =>
-{
-    var result = await getWorkoutByIdQuery.ExecuteAsync(workoutId, cancellationToken);
-    if (!result.IsSuccess)
-    {
-        return Results.NotFound();
-    }
-
-    return Results.Ok(WorkoutResponse.FromEntity(result.Value!));
-});
+app.MapGroup("/workouts").MapWorkoutsApi();
 
 app.Run();
