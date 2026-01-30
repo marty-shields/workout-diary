@@ -1,5 +1,4 @@
 using System.ComponentModel.DataAnnotations;
-using Core.AggregateRoots;
 using Core.Services.Workouts;
 
 namespace Api.Models.Workouts;
