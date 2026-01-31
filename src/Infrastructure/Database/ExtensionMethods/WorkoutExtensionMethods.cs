@@ -52,7 +52,7 @@ public static class WorkoutExtensionMethods
                 {
                     workoutActivities.Add(new WorkoutActivity
                     {
-                        Id = Guid.NewGuid(),
+                        Id = Guid.CreateVersion7(),
                         WorkoutId = workout.Id,
                         ExerciseId = wa.Exercise.Id,
                         Repetitions = set.Repetitions,

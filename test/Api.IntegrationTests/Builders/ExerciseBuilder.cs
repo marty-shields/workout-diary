@@ -4,7 +4,7 @@ namespace Api.IntegrationTests.Builders;
 
 public class ExerciseBuilder
 {
-    private Guid? _id = Guid.NewGuid();
+    private Guid? _id = Guid.CreateVersion7();
     private WorkoutSet[]? _sets = [WorkoutSetBuilder.Create().Build()];
 
     public static ExerciseBuilder Create() => new();

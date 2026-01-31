@@ -25,7 +25,7 @@ public class GETWorkoutTests : BaseTestFixture
     [Test]
     public async Task WhenWorkoutDoesNotExist_ShouldReturnNotFound()
     {
-        var nonExistentId = Guid.NewGuid();
+        var nonExistentId = Guid.CreateVersion7();
         var response = await GetWorkout(nonExistentId.ToString());
 
         Assert.That(response.StatusCode, Is.AnyOf(HttpStatusCode.NotFound));
@@ -38,8 +38,8 @@ public class GETWorkoutTests : BaseTestFixture
     [Test]
     public async Task WhenWorkoutExists_ShouldReturnOkWithWorkoutData()
     {
-        var exerciseId = Guid.NewGuid();
-        var workoutId = Guid.NewGuid();
+        var exerciseId = Guid.CreateVersion7();
+        var workoutId = Guid.CreateVersion7();
         var workoutDate = DateTime.UtcNow.AddHours(-2);
 
         await SeedExercise(exerciseId, "Pushups");
@@ -67,9 +67,9 @@ public class GETWorkoutTests : BaseTestFixture
     [Test]
     public async Task WhenWorkoutHasMultipleExercisesWithMultipleSets_ShouldReturnAllData()
     {
-        var exercise1Id = Guid.NewGuid();
-        var exercise2Id = Guid.NewGuid();
-        var workoutId = Guid.NewGuid();
+        var exercise1Id = Guid.CreateVersion7();
+        var exercise2Id = Guid.CreateVersion7();
+        var workoutId = Guid.CreateVersion7();
         var workoutDate = DateTime.UtcNow.AddHours(-1);
 
         await SeedExercise(exercise1Id, "Pushups");
@@ -105,8 +105,8 @@ public class GETWorkoutTests : BaseTestFixture
     [Test]
     public async Task WhenWorkoutHasNullNotes_ShouldReturnWithoutNotes()
     {
-        var exerciseId = Guid.NewGuid();
-        var workoutId = Guid.NewGuid();
+        var exerciseId = Guid.CreateVersion7();
+        var workoutId = Guid.CreateVersion7();
 
         await SeedExercise(exerciseId, "Bench Press");
         await SeedWorkoutWithNullNotes(workoutId, exerciseId);
@@ -124,8 +124,8 @@ public class GETWorkoutTests : BaseTestFixture
     [Test]
     public async Task WhenExerciseHasZeroWeight_ShouldReturnZeroWeight()
     {
-        var exerciseId = Guid.NewGuid();
-        var workoutId = Guid.NewGuid();
+        var exerciseId = Guid.CreateVersion7();
+        var workoutId = Guid.CreateVersion7();
 
         await SeedExercise(exerciseId, "Pushups");
         await SeedWorkoutWithZeroWeight(workoutId, exerciseId);
@@ -184,7 +184,7 @@ public class GETWorkoutTests : BaseTestFixture
 
         db.WorkoutActivities.Add(new Infrastructure.Database.Tables.WorkoutActivity
         {
-            Id = Guid.NewGuid(),
+            Id = Guid.CreateVersion7(),
             WorkoutId = workoutId,
             ExerciseId = exerciseId,
             Repetitions = 10,
@@ -211,7 +211,7 @@ public class GETWorkoutTests : BaseTestFixture
         // Add 2 sets for Pushups
         db.WorkoutActivities.Add(new Infrastructure.Database.Tables.WorkoutActivity
         {
-            Id = Guid.NewGuid(),
+            Id = Guid.CreateVersion7(),
             WorkoutId = workoutId,
             ExerciseId = exercise1Id,
             Repetitions = 10,
@@ -219,7 +219,7 @@ public class GETWorkoutTests : BaseTestFixture
         });
         db.WorkoutActivities.Add(new Infrastructure.Database.Tables.WorkoutActivity
         {
-            Id = Guid.NewGuid(),
+            Id = Guid.CreateVersion7(),
             WorkoutId = workoutId,
             ExerciseId = exercise1Id,
             Repetitions = 8,
@@ -229,7 +229,7 @@ public class GETWorkoutTests : BaseTestFixture
         // Add 3 sets for Squats
         db.WorkoutActivities.Add(new Infrastructure.Database.Tables.WorkoutActivity
         {
-            Id = Guid.NewGuid(),
+            Id = Guid.CreateVersion7(),
             WorkoutId = workoutId,
             ExerciseId = exercise2Id,
             Repetitions = 12,
@@ -237,7 +237,7 @@ public class GETWorkoutTests : BaseTestFixture
         });
         db.WorkoutActivities.Add(new Infrastructure.Database.Tables.WorkoutActivity
         {
-            Id = Guid.NewGuid(),
+            Id = Guid.CreateVersion7(),
             WorkoutId = workoutId,
             ExerciseId = exercise2Id,
             Repetitions = 10,
@@ -245,7 +245,7 @@ public class GETWorkoutTests : BaseTestFixture
         });
         db.WorkoutActivities.Add(new Infrastructure.Database.Tables.WorkoutActivity
         {
-            Id = Guid.NewGuid(),
+            Id = Guid.CreateVersion7(),
             WorkoutId = workoutId,
             ExerciseId = exercise2Id,
             Repetitions = 8,
@@ -271,7 +271,7 @@ public class GETWorkoutTests : BaseTestFixture
 
         db.WorkoutActivities.Add(new Infrastructure.Database.Tables.WorkoutActivity
         {
-            Id = Guid.NewGuid(),
+            Id = Guid.CreateVersion7(),
             WorkoutId = workoutId,
             ExerciseId = exerciseId,
             Repetitions = 12,
@@ -297,7 +297,7 @@ public class GETWorkoutTests : BaseTestFixture
 
         db.WorkoutActivities.Add(new Infrastructure.Database.Tables.WorkoutActivity
         {
-            Id = Guid.NewGuid(),
+            Id = Guid.CreateVersion7(),
             WorkoutId = workoutId,
             ExerciseId = exerciseId,
             Repetitions = 15,

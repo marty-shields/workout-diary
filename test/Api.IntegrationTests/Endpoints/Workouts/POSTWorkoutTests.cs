@@ -59,7 +59,7 @@ public class POSTWorkoutTests : BaseTestFixture
     [Test]
     public async Task WhenTotalDurationMinutesPropertyIsMissing_ShouldReturnBadRequest()
     {
-        var exercises = new[] { new { name = Guid.NewGuid(), sets = new[] { new { repetitions = 10, weightKg = 0.0 } } } };
+        var exercises = new[] { new { name = Guid.CreateVersion7(), sets = new[] { new { repetitions = 10, weightKg = 0.0 } } } };
         var request = new { exercises, notes = DefaultNotes, workoutDate = DefaultWorkoutDate };
         var response = await PostWorkoutAnon(request);
         await AssertValidationError(response, "TotalDurationMinutes", "The TotalDurationMinutes field is required.");
@@ -80,7 +80,7 @@ public class POSTWorkoutTests : BaseTestFixture
     [Test]
     public async Task WhenWorkoutDatePropertyIsMissing_ShouldReturnBadRequest()
     {
-        var exercises = new[] { new { name = Guid.NewGuid(), sets = new[] { new { repetitions = 10, weightKg = 0.0 } } } };
+        var exercises = new[] { new { name = Guid.CreateVersion7(), sets = new[] { new { repetitions = 10, weightKg = 0.0 } } } };
         var request = new { exercises, notes = DefaultNotes, totalDurationMinutes = DefaultDuration };
         var response = await PostWorkoutAnon(request);
         await AssertValidationError(response, "WorkoutDate", "The WorkoutDate field is required.");
@@ -263,12 +263,12 @@ public class POSTWorkoutTests : BaseTestFixture
     [Test]
     public async Task WhenExerciseDoesNotExistInDatabase_ShouldReturnBadRequest()
     {
-        var pushupId = Guid.NewGuid();
-        var squatsId = Guid.NewGuid();
+        var pushupId = Guid.CreateVersion7();
+        var squatsId = Guid.CreateVersion7();
         await SeedExercises((pushupId, "Pushups"), (squatsId, "Squats"));
 
-        var missingId1 = Guid.NewGuid();
-        var missingId2 = Guid.NewGuid();
+        var missingId1 = Guid.CreateVersion7();
+        var missingId2 = Guid.CreateVersion7();
         var exercises = new[]
         {
             ExerciseBuilder.Create().WithId(pushupId).Build(),
@@ -290,7 +290,7 @@ public class POSTWorkoutTests : BaseTestFixture
     [Test]
     public async Task WhenSingleValidActivity_ShouldReturnCreated()
     {
-        var pushupId = Guid.NewGuid();
+        var pushupId = Guid.CreateVersion7();
         await SeedExercises((pushupId, "Pushups"));
 
         var exercises = new[] { ExerciseBuilder.Create().WithId(pushupId).Build() };
@@ -312,9 +312,9 @@ public class POSTWorkoutTests : BaseTestFixture
     [Test]
     public async Task MultipleValidActivities_ShouldReturnCreated()
     {
-        var pushupId = Guid.NewGuid();
-        var squatId = Guid.NewGuid();
-        var plankId = Guid.NewGuid();
+        var pushupId = Guid.CreateVersion7();
+        var squatId = Guid.CreateVersion7();
+        var plankId = Guid.CreateVersion7();
         await SeedExercises((pushupId, "Pushups"), (squatId, "Squats"), (plankId, "Plank"));
 
         var set1 = WorkoutSetBuilder.Create().WithRepetitions(30).WithWeightKg(0.0).Build();

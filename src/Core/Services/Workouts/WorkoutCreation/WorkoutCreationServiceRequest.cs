@@ -24,7 +24,7 @@ public class WorkoutCreationServiceRequest
 
         return new Workout
         {
-            Id = Guid.NewGuid(),
+            Id = Guid.CreateVersion7(),
             Notes = Notes,
             TotalDurationMinutes = TotalDurationMinutes,
             WorkoutDate = WorkoutDate,

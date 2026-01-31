@@ -4,7 +4,7 @@ public class ExerciseTableBuilder
 {
     private Infrastructure.Database.Tables.Exercise _exercise = new Infrastructure.Database.Tables.Exercise
     {
-        Id = Guid.NewGuid(),
+        Id = Guid.CreateVersion7(),
         Name = "Default Exercise",
         Force = Core.ValueObjects.Exercise.Force.Push,
         Level = Core.ValueObjects.Exercise.Level.Beginner,
