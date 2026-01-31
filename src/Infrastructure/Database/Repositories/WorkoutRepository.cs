@@ -23,7 +23,17 @@ public class WorkoutRepository : IWorkoutRepository
         await _context.SaveChangesAsync(cancellationToken);
     }
 
-    public async Task<Workout?> GetByIdAsync(Guid workoutId, CancellationToken cancellationToken)
+    public async Task<IEnumerable<Workout>> GetAsync(CancellationToken cancellationToken)
+    {
+        var workouts = await _context.Workouts
+            .Include(w => w.WorkoutActivities)
+            .ThenInclude(wa => wa.Exercise)
+            .OrderByDescending(x => x.WorkoutDate)
+            .ToListAsync();
+        return workouts.Select(w => w.ToEntity());
+    }
+
+    public async Task<Workout?> GetAsync(Guid workoutId, CancellationToken cancellationToken)
     {
         var workoutTable = await _context.Workouts
             .Include(w => w.WorkoutActivities)

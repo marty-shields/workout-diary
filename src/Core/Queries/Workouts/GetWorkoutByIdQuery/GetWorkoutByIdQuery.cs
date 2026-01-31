@@ -14,7 +14,7 @@ public class GetWorkoutByIdQuery : IGetWorkoutByIdQuery
 
     public async Task<Result<Workout>> ExecuteAsync(Guid workoutId, CancellationToken cancellationToken)
     {
-        var workout = await _workoutRepository.GetByIdAsync(workoutId, cancellationToken);
+        var workout = await _workoutRepository.GetAsync(workoutId, cancellationToken);
 
         if (workout is null)
         {

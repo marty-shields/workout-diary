@@ -1,0 +1,245 @@
+using Api.IntegrationTests.Builders;
+using Api.Models.Workouts;
+using Infrastructure.Database;
+using Microsoft.Extensions.DependencyInjection;
+using System.Net;
+using System.Text.Json;
+
+namespace Api.IntegrationTests.Endpoints.Workouts;
+
+public class GETWorkoutsTests : BaseTestFixture
+{
+    #region Happy Path Tests
+
+    [Test]
+    public async Task WhenNoWorkoutsExist_ShouldReturnEmptyList()
+    {
+        var response = await GetWorkouts();
+        Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
+
+        var workouts = await ParseWorkoutsResponse(response);
+        Assert.That(workouts, Is.Not.Null);
+        Assert.That(workouts, Is.Empty);
+    }
+
+    [Test]
+    public async Task WhenSingleWorkoutExists_ShouldReturnListWithOneWorkout()
+    {
+        var exerciseId = Guid.CreateVersion7();
+        var workoutId = Guid.CreateVersion7();
+        var workoutDate = DateTime.UtcNow.AddHours(-2);
+
+        await SeedExercise(exerciseId, "Pushups");
+        await SeedWorkoutWithSingleExercise(workoutId, exerciseId, workoutDate);
+
+        var response = await GetWorkouts();
+        Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
+
+        var workouts = await ParseWorkoutsResponse(response);
+        Assert.That(workouts, Is.Not.Null);
+        Assert.That(workouts.Count(), Is.EqualTo(1));
+
+        var workout = workouts.First();
+        Assert.That(workout.Id, Is.EqualTo(workoutId));
+        Assert.That(workout.Notes, Is.EqualTo("Single Exercise Workout"));
+        Assert.That(workout.TotalDurationMinutes, Is.EqualTo(30));
+        Assert.That(workout.WorkoutDate, Is.EqualTo(workoutDate));
+        Assert.That(workout.WorkoutActivities.Count(), Is.EqualTo(1));
+        var activity = workout.WorkoutActivities.First();
+        Assert.That(activity.ExerciseName, Is.EqualTo("Pushups"));
+        Assert.That(activity.Sets.Count(), Is.EqualTo(1));
+        var set = activity.Sets.First();
+        Assert.That(set.Repetitions, Is.EqualTo(10));
+        Assert.That(set.WeightKg, Is.EqualTo(5.0));
+    }
+
+    [Test]
+    public async Task WhenMultipleWorkoutsExist_ShouldReturnAllWorkoutsOrderedByDateDescending()
+    {
+        var exerciseId = Guid.CreateVersion7();
+        var workout1Id = Guid.CreateVersion7();
+        var workout2Id = Guid.CreateVersion7();
+        var workout3Id = Guid.CreateVersion7();
+        var workout1Date = DateTime.UtcNow.AddHours(-3);
+        var workout2Date = DateTime.UtcNow.AddHours(-2);
+        var workout3Date = DateTime.UtcNow.AddHours(-1);
+
+        await SeedExercise(exerciseId, "Pushups");
+
+        // Create workouts in non-chronological order to test ordering
+        await SeedWorkoutWithSingleExercise(workout2Id, exerciseId, workout2Date, "Workout 2");
+        await SeedWorkoutWithSingleExercise(workout1Id, exerciseId, workout1Date, "Workout 1");
+        await SeedWorkoutWithSingleExercise(workout3Id, exerciseId, workout3Date, "Workout 3");
+
+        var response = await GetWorkouts();
+        Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
+
+        var workouts = await ParseWorkoutsResponse(response);
+        Assert.That(workouts, Is.Not.Null);
+        Assert.That(workouts.Count(), Is.EqualTo(3));
+
+        // Should be ordered by date descending (newest first)
+        var workoutIds = workouts.Select(w => w.Id).ToList();
+        Assert.That(workoutIds[0], Is.EqualTo(workout3Id));
+        Assert.That(workoutIds[1], Is.EqualTo(workout2Id));
+        Assert.That(workoutIds[2], Is.EqualTo(workout1Id));
+
+        // Verify dates are in descending order
+        var workoutDates = workouts.Select(w => w.WorkoutDate).ToList();
+        Assert.That(workoutDates[0], Is.GreaterThan(workoutDates[1]));
+        Assert.That(workoutDates[1], Is.GreaterThan(workoutDates[2]));
+    }
+
+    [Test]
+    public async Task WhenWorkoutsHaveDifferentExercises_ShouldReturnAllExerciseData()
+    {
+        var pushupsId = Guid.CreateVersion7();
+        var squatsId = Guid.CreateVersion7();
+        var workoutId = Guid.CreateVersion7();
+        var workoutDate = DateTime.UtcNow.AddHours(-1);
+
+        await SeedExercise(pushupsId, "Pushups");
+        await SeedExercise(squatsId, "Squats");
+        await SeedWorkoutWithMultipleExercisesAndSets(workoutId, pushupsId, squatsId, workoutDate);
+
+        var response = await GetWorkouts();
+        Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
+
+        var workouts = await ParseWorkoutsResponse(response);
+        Assert.That(workouts, Is.Not.Null);
+        Assert.That(workouts.Count(), Is.EqualTo(1));
+
+        var workout = workouts.First();
+        Assert.That(workout.WorkoutActivities.Count(), Is.EqualTo(2));
+
+        // Verify Pushups (2 sets)
+        var pushups = workout.WorkoutActivities.FirstOrDefault(a => a.ExerciseName == "Pushups");
+        Assert.That(pushups, Is.Not.Null);
+        Assert.That(pushups!.Sets.Count(), Is.EqualTo(2));
+        var pushupSets = pushups.Sets.ToList();
+        Assert.That(pushupSets, Has.One.Matches<Sets>(s => s.Repetitions == 10 && s.WeightKg == 5.0));
+        Assert.That(pushupSets, Has.One.Matches<Sets>(s => s.Repetitions == 8 && s.WeightKg == 7.5));
+
+        // Verify Squats (3 sets)
+        var squats = workout.WorkoutActivities.FirstOrDefault(a => a.ExerciseName == "Squats");
+        Assert.That(squats, Is.Not.Null);
+        Assert.That(squats!.Sets.Count(), Is.EqualTo(3));
+        var squatSets = squats.Sets.ToList();
+        Assert.That(squatSets, Has.One.Matches<Sets>(s => s.Repetitions == 12 && s.WeightKg == 20.0));
+        Assert.That(squatSets, Has.One.Matches<Sets>(s => s.Repetitions == 10 && s.WeightKg == 25.0));
+        Assert.That(squatSets, Has.One.Matches<Sets>(s => s.Repetitions == 8 && s.WeightKg == 30.0));
+    }
+
+    #endregion
+
+    #region Helper Methods
+
+    private async Task<HttpResponseMessage> GetWorkouts()
+    {
+        return await client.GetAsync("/workouts");
+    }
+
+    private async Task<IEnumerable<WorkoutResponse>?> ParseWorkoutsResponse(HttpResponseMessage response)
+    {
+        var content = await response.Content.ReadAsStringAsync();
+        return JsonSerializer.Deserialize<IEnumerable<WorkoutResponse>>(content, new JsonSerializerOptions
+        {
+            PropertyNameCaseInsensitive = true
+        });
+    }
+
+    private async Task SeedExercise(Guid exerciseId, string name)
+    {
+        using var scope = factory.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<WorkoutContext>();
+        db.Exercises.Add(ExerciseTableBuilder.Create().WithId(exerciseId).WithName(name).Build());
+        await db.SaveChangesAsync();
+    }
+
+    private async Task SeedWorkoutWithSingleExercise(Guid workoutId, Guid exerciseId, DateTime workoutDate, string notes = "Single Exercise Workout")
+    {
+        using var scope = factory.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<WorkoutContext>();
+
+        var workout = new Infrastructure.Database.Tables.Workout
+        {
+            Id = workoutId,
+            Notes = notes,
+            TotalDurationMinutes = 30,
+            WorkoutDate = workoutDate
+        };
+        db.Workouts.Add(workout);
+        db.WorkoutActivities.Add(new Infrastructure.Database.Tables.WorkoutActivity
+        {
+            Id = Guid.CreateVersion7(),
+            WorkoutId = workoutId,
+            ExerciseId = exerciseId,
+            Repetitions = 10,
+            WeightKg = 5.0
+        });
+        await db.SaveChangesAsync();
+    }
+
+    private async Task SeedWorkoutWithMultipleExercisesAndSets(Guid workoutId, Guid exercise1Id, Guid exercise2Id, DateTime workoutDate)
+    {
+        using var scope = factory.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<WorkoutContext>();
+
+        var workout = new Infrastructure.Database.Tables.Workout
+        {
+            Id = workoutId,
+            Notes = "Multiple Exercises Workout",
+            TotalDurationMinutes = 60,
+            WorkoutDate = workoutDate
+        };
+        db.Workouts.Add(workout);
+        await db.SaveChangesAsync();
+
+        // Add 2 sets for Pushups
+        db.WorkoutActivities.Add(new Infrastructure.Database.Tables.WorkoutActivity
+        {
+            Id = Guid.CreateVersion7(),
+            WorkoutId = workoutId,
+            ExerciseId = exercise1Id,
+            Repetitions = 10,
+            WeightKg = 5.0
+        });
+        db.WorkoutActivities.Add(new Infrastructure.Database.Tables.WorkoutActivity
+        {
+            Id = Guid.CreateVersion7(),
+            WorkoutId = workoutId,
+            ExerciseId = exercise1Id,
+            Repetitions = 8,
+            WeightKg = 7.5
+        });
+
+        // Add 3 sets for Squats
+        db.WorkoutActivities.Add(new Infrastructure.Database.Tables.WorkoutActivity
+        {
+            Id = Guid.CreateVersion7(),
+            WorkoutId = workoutId,
+            ExerciseId = exercise2Id,
+            Repetitions = 12,
+            WeightKg = 20.0
+        });
+        db.WorkoutActivities.Add(new Infrastructure.Database.Tables.WorkoutActivity
+        {
+            Id = Guid.CreateVersion7(),
+            WorkoutId = workoutId,
+            ExerciseId = exercise2Id,
+            Repetitions = 10,
+            WeightKg = 25.0
+        });
+        db.WorkoutActivities.Add(new Infrastructure.Database.Tables.WorkoutActivity
+        {
+            Id = Guid.CreateVersion7(),
+            WorkoutId = workoutId,
+            ExerciseId = exercise2Id,
+            Repetitions = 8,
+            WeightKg = 30.0
+        });
+        await db.SaveChangesAsync();
+    }
+
+    #endregion
+}

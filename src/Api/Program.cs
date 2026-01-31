@@ -31,12 +31,6 @@ if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
     app.MapScalarApiReference();
-
-    using (var scope = app.Services.CreateScope())
-    {
-        await scope.ServiceProvider.GetRequiredService<WorkoutContext>()
-            .Database.EnsureCreatedAsync();
-    }
 }
 
 app.MapGroup("/workouts").MapWorkoutsApi();

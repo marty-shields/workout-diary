@@ -1,5 +1,8 @@
+using Microsoft.EntityFrameworkCore;
+
 namespace Infrastructure.Database.Tables;
 
+[Index(nameof(WorkoutDate))]
 public class Workout
 {
     public required Guid Id { get; set; }

@@ -1,4 +1,5 @@
 using Core.Queries.Workouts.GetWorkoutByIdQuery;
+using Core.Queries.Workouts.GetWorkoutsQuery;
 using Core.Services.Workouts;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -16,6 +17,7 @@ public static class DependencyInjectionExtensions
         public void AddQueries()
         {
             services.AddScoped<IGetWorkoutByIdQuery, GetWorkoutByIdQuery>();
+            services.AddScoped<IGetWorkoutsQuery, GetWorkoutsQuery>();
         }
     }
 }

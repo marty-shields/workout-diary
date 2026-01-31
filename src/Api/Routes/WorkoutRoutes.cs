@@ -1,5 +1,6 @@
 using Api.Models.Workouts;
 using Core.Queries.Workouts.GetWorkoutByIdQuery;
+using Core.Queries.Workouts.GetWorkoutsQuery;
 using Core.Services.Workouts;
 using Microsoft.AspNetCore.Mvc;
 
@@ -36,5 +37,13 @@ public class WorkoutRoutes
         }
 
         return Results.Ok(WorkoutResponse.FromEntity(result.Value!));
+    }
+
+    public static async Task<IResult> GetWorkoutsAsync(
+        [FromServices] IGetWorkoutsQuery getWorkoutsQuery,
+        CancellationToken cancellationToken)
+    {
+        var result = await getWorkoutsQuery.ExecuteAsync(cancellationToken);
+        return Results.Ok(result.Value!.Select(x => WorkoutResponse.FromEntity(x)));
     }
 }
