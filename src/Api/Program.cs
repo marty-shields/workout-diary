@@ -17,7 +17,7 @@ builder.Services.Configure<Microsoft.AspNetCore.Http.Json.JsonOptions>(options =
 
 builder.Services.AddDbContext<WorkoutContext>(options =>
 {
-    options.UseSqlite(builder.Configuration.GetConnectionString("WorkoutContext"));
+    options.UseNpgsql(builder.Configuration.GetConnectionString("WorkoutContext"));
 });
 
 builder.Services.AddRepositories();
@@ -31,6 +31,12 @@ if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
     app.MapScalarApiReference();
+
+    using (var scope = app.Services.CreateScope())
+    {
+        await scope.ServiceProvider.GetRequiredService<WorkoutContext>()
+            .Database.EnsureCreatedAsync();
+    }
 }
 
 app.MapGroup("/workouts").MapWorkoutsApi();

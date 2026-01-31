@@ -10,7 +10,11 @@ public static class WebApplicationBuilderExtensions
 {
     public static void SetupLogging(this WebApplicationBuilder builder)
     {
-        builder.Logging.AddOpenTelemetry();
+        builder.Logging.AddOpenTelemetry(logging =>
+        {
+            logging.IncludeFormattedMessage = true;
+            logging.IncludeScopes = true;
+        });
 
         var otel = builder.Services.AddOpenTelemetry()
             .ConfigureResource(resource => resource.AddService("workouts"))

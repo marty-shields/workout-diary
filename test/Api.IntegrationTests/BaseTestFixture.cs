@@ -10,15 +10,16 @@ public class BaseTestFixture
     internal HttpClient client;
 
     [SetUp]
-    public void SetUp()
+    public async Task SetUp()
     {
         factory = new TestApplicationFactory();
         client = factory.CreateClient();
         using (var scope = factory.Services.CreateScope())
         {
-            var scopedServices = scope.ServiceProvider;
-            var db = scopedServices.GetRequiredService<WorkoutContext>();
-            db.Database.EnsureCreated();
+            await scope.ServiceProvider
+                .GetRequiredService<WorkoutContext>()
+                .Database
+                .EnsureCreatedAsync();
         }
     }
 
