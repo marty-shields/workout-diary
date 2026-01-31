@@ -1,4 +1,5 @@
 using OpenTelemetry;
+using OpenTelemetry.Exporter;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
@@ -22,9 +23,10 @@ public static class WebApplicationBuilderExtensions
                 .AddEntityFrameworkCoreInstrumentation());
 
         var otelEndpointUri = builder.Configuration.GetSection("OpenTelemetry")["Uri"];
-        if (!string.IsNullOrWhiteSpace(otelEndpointUri))
+        var otelEndpointProtocol = builder.Configuration.GetSection("OpenTelemetry")["Protocol"];
+        if (Uri.TryCreate(otelEndpointUri, UriKind.Absolute, out Uri? uri) && Enum.TryParse(otelEndpointProtocol, out OtlpExportProtocol protocol))
         {
-            otel.UseOtlpExporter(OpenTelemetry.Exporter.OtlpExportProtocol.Grpc, new Uri(otelEndpointUri));
+            otel.UseOtlpExporter(protocol, uri);
         }
     }
 }
