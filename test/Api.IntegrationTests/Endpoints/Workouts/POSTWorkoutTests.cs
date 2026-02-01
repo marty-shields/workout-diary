@@ -421,7 +421,7 @@ public class POSTWorkoutTests : BaseTestFixture
         Assert.That(createdWorkout!.Id, Is.EqualTo(expectedWorkoutResponse.Id));
         Assert.That(createdWorkout.Notes, Is.EqualTo(expectedWorkoutResponse.Notes));
         Assert.That(createdWorkout.TotalDurationMinutes, Is.EqualTo(expectedWorkoutResponse.TotalDurationMinutes));
-        Assert.That(createdWorkout.WorkoutDate.ToUniversalTime(), Is.EqualTo(expectedWorkoutResponse.WorkoutDate.ToUniversalTime()));
+        Assert.That(createdWorkout.WorkoutDate.ToString(), Is.EqualTo(expectedWorkoutResponse.WorkoutDate.ToString()));
         Assert.That(createdWorkout.WorkoutActivities.Count(), Is.EqualTo(expectedWorkoutResponse.WorkoutActivities.Count()));
         Assert.That(createdWorkout.WorkoutActivities.Select(wa => wa.ExerciseName),
             Is.EquivalentTo(expectedWorkoutResponse.WorkoutActivities.Select(wa => wa.ExerciseName)));

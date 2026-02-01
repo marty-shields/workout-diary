@@ -27,7 +27,7 @@ public class GETWorkoutsTests : BaseTestFixture
     {
         var exerciseId = Guid.CreateVersion7();
         var workoutId = Guid.CreateVersion7();
-        var workoutDate = DateTime.UtcNow.AddHours(-2);
+        var workoutDate = DateTimeOffset.UtcNow.AddHours(-2);
 
         await SeedExercise(exerciseId, "Pushups");
         await SeedWorkoutWithSingleExercise(workoutId, exerciseId, workoutDate);
@@ -43,7 +43,7 @@ public class GETWorkoutsTests : BaseTestFixture
         Assert.That(workout.Id, Is.EqualTo(workoutId));
         Assert.That(workout.Notes, Is.EqualTo("Single Exercise Workout"));
         Assert.That(workout.TotalDurationMinutes, Is.EqualTo(30));
-        Assert.That(workout.WorkoutDate, Is.EqualTo(workoutDate));
+        Assert.That(workout.WorkoutDate.ToString(), Is.EqualTo(workoutDate.ToString()));
         Assert.That(workout.WorkoutActivities.Count(), Is.EqualTo(1));
         var activity = workout.WorkoutActivities.First();
         Assert.That(activity.ExerciseName, Is.EqualTo("Pushups"));
@@ -156,7 +156,7 @@ public class GETWorkoutsTests : BaseTestFixture
         await db.SaveChangesAsync();
     }
 
-    private async Task SeedWorkoutWithSingleExercise(Guid workoutId, Guid exerciseId, DateTime workoutDate, string notes = "Single Exercise Workout")
+    private async Task SeedWorkoutWithSingleExercise(Guid workoutId, Guid exerciseId, DateTimeOffset workoutDate, string notes = "Single Exercise Workout")
     {
         using var scope = factory.Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<WorkoutContext>();

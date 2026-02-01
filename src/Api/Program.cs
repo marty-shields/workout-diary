@@ -1,4 +1,5 @@
 using System.Text.Json.Serialization;
+using Api.Converters;
 using Api.Extensions;
 using Core.ExtensionMethods;
 using Infrastructure.Database;
@@ -13,6 +14,7 @@ builder.Services.AddValidation();
 builder.Services.Configure<Microsoft.AspNetCore.Http.Json.JsonOptions>(options =>
 {
     options.SerializerOptions.NumberHandling = JsonNumberHandling.Strict;
+    options.SerializerOptions.Converters.Add(new JsonDateTimeOffsetUtcConverter());
 });
 
 builder.Services.AddDbContext<WorkoutContext>(options =>

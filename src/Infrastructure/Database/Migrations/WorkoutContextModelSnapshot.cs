@@ -56,7 +56,7 @@ namespace Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Exercises");
+                    b.ToTable("Exercises", (string)null);
                 });
 
             modelBuilder.Entity("Infrastructure.Database.Tables.Workout", b =>
@@ -78,7 +78,7 @@ namespace Infrastructure.Migrations
 
                     b.HasIndex("WorkoutDate");
 
-                    b.ToTable("Workouts");
+                    b.ToTable("Workouts", (string)null);
                 });
 
             modelBuilder.Entity("Infrastructure.Database.Tables.WorkoutActivity", b =>
@@ -105,7 +105,7 @@ namespace Infrastructure.Migrations
 
                     b.HasIndex("WorkoutId");
 
-                    b.ToTable("WorkoutActivities");
+                    b.ToTable("WorkoutActivities", (string)null);
                 });
 
             modelBuilder.Entity("Infrastructure.Database.Tables.WorkoutActivity", b =>

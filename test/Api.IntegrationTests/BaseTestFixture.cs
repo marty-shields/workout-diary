@@ -24,9 +24,16 @@ public class BaseTestFixture
     }
 
     [TearDown]
-    public void TearDown()
+    public async Task TearDown()
     {
         client.Dispose();
-        factory.Dispose();
+        using (var scope = factory.Services.CreateScope())
+        {
+            await scope.ServiceProvider
+                .GetRequiredService<WorkoutContext>()
+                .Database
+                .EnsureDeletedAsync();
+        }
+        await factory.DisposeAsync();
     }
 }

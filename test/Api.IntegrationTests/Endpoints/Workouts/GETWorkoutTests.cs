@@ -40,7 +40,7 @@ public class GETWorkoutTests : BaseTestFixture
     {
         var exerciseId = Guid.CreateVersion7();
         var workoutId = Guid.CreateVersion7();
-        var workoutDate = DateTime.UtcNow.AddHours(-2);
+        var workoutDate = DateTimeOffset.UtcNow.AddHours(-2);
 
         await SeedExercise(exerciseId, "Pushups");
         await SeedWorkoutWithSingleExercise(workoutId, exerciseId, workoutDate);
@@ -167,7 +167,7 @@ public class GETWorkoutTests : BaseTestFixture
         await db.SaveChangesAsync();
     }
 
-    private async Task SeedWorkoutWithSingleExercise(Guid workoutId, Guid exerciseId, DateTime workoutDate)
+    private async Task SeedWorkoutWithSingleExercise(Guid workoutId, Guid exerciseId, DateTimeOffset workoutDate)
     {
         using var scope = factory.Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<WorkoutContext>();

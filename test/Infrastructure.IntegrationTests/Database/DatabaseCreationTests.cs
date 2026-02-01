@@ -11,8 +11,9 @@ public class DatabaseCreationTests
     [Test]
     public async Task DatabaseIsCreated_Successfully()
     {
+        var connectionString = $"User ID=postgres;Password=password;Host=localhost;Port=5432;Database={Guid.CreateVersion7()};";
         var options = new DbContextOptionsBuilder<WorkoutContext>()
-            .UseSqlite($"Data Source={nameof(DatabaseIsCreated_Successfully)}.db")
+            .UseNpgsql(connectionString)
             .Options;
 
         using var context = new WorkoutContext(options);
@@ -28,9 +29,10 @@ public class DatabaseCreationTests
     [Test]
     public async Task ValidExerciseSeedJsonFile_DataIsSeeded()
     {
+        var connectionString = $"User ID=postgres;Password=password;Host=localhost;Port=5432;Database={Guid.CreateVersion7()};";
         var filePath = "Database/SeedData/exercises.json";
         var options = new DbContextOptionsBuilder<WorkoutContext>()
-            .UseSqlite($"Data Source={nameof(ValidExerciseSeedJsonFile_DataIsSeeded)}.db")
+            .UseNpgsql(connectionString)
             .UseAsyncSeeding(async (context, _, cancellationToken)
                 => await ExerciseDataSeeder.SeedListFromJsonAsync(filePath, context, cancellationToken))
             .Options;
