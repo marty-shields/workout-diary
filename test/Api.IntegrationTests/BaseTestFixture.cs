@@ -3,6 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Api.IntegrationTests;
 
+[Parallelizable]
 [TestFixture]
 public class BaseTestFixture
 {

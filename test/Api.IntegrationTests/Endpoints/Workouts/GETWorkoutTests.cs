@@ -54,7 +54,7 @@ public class GETWorkoutTests : BaseTestFixture
         Assert.That(workout!.Id, Is.EqualTo(workoutId));
         Assert.That(workout.Notes, Is.EqualTo("Single Exercise Workout"));
         Assert.That(workout.TotalDurationMinutes, Is.EqualTo(30));
-        Assert.That(workout.WorkoutDate, Is.EqualTo(workoutDate));
+        Assert.That(workout.WorkoutDate.ToString(), Is.EqualTo(workoutDate.ToString()));
         Assert.That(workout.WorkoutActivities.Count(), Is.EqualTo(1));
         var activity = workout.WorkoutActivities.First();
         Assert.That(activity.ExerciseName, Is.EqualTo("Pushups"));
