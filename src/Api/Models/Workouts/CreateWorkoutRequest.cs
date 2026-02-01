@@ -6,15 +6,15 @@ namespace Api.Models.Workouts;
 public class WorkoutRequest : IValidatableObject
 {
     [Required, MinLength(1)]
-    public Exercise[]? Exercises { get; init; }
+    public required Exercise[] Exercises { get; init; }
 
     public string? Notes { get; init; }
 
     [Required, Range(1, int.MaxValue)]
-    public int? TotalDurationMinutes { get; init; }
+    public required int TotalDurationMinutes { get; init; }
 
     [Required]
-    public DateTime? WorkoutDate { get; init; }
+    public required DateTimeOffset WorkoutDate { get; init; }
 
     public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {
@@ -59,9 +59,9 @@ public class WorkoutRequest : IValidatableObject
                 {
                     workoutActivities.Add(new WorkoutCreationServiceRequest.WorkoutActivity
                     {
-                        ExerciseId = exercise.Id!.Value,
-                        Repetitions = set.Repetitions!.Value,
-                        WeightKg = set.WeightKg!.Value
+                        ExerciseId = exercise.Id,
+                        Repetitions = set.Repetitions,
+                        WeightKg = set.WeightKg
                     });
                 }
             }
@@ -71,8 +71,8 @@ public class WorkoutRequest : IValidatableObject
         return new WorkoutCreationServiceRequest
         {
             Notes = Notes,
-            TotalDurationMinutes = TotalDurationMinutes!.Value,
-            WorkoutDate = WorkoutDate!.Value,
+            TotalDurationMinutes = TotalDurationMinutes,
+            WorkoutDate = WorkoutDate,
             WorkoutActivities = workoutActivities
         };
     }
@@ -81,10 +81,10 @@ public class WorkoutRequest : IValidatableObject
 public class Exercise : IValidatableObject
 {
     [Required]
-    public Guid? Id { get; init; }
+    public required Guid Id { get; init; }
 
     [Required, MinLength(1)]
-    public WorkoutSet[]? Sets { get; init; }
+    public required WorkoutSet[] Sets { get; init; }
 
     public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {
@@ -115,8 +115,8 @@ public class Exercise : IValidatableObject
 public class WorkoutSet
 {
     [Required, Range(1, int.MaxValue)]
-    public int? Repetitions { get; init; }
+    public required int Repetitions { get; init; }
 
     [Required, Range(0, double.MaxValue)]
-    public double? WeightKg { get; init; }
+    public required double WeightKg { get; init; }
 }

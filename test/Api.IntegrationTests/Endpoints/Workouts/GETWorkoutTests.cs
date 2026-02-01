@@ -147,7 +147,7 @@ public class GETWorkoutTests : BaseTestFixture
 
     private async Task<HttpResponseMessage> GetWorkout(string workoutId)
     {
-        return await client.GetAsync($"/workouts/{workoutId}");
+        return await client.GetAsync($"/api/workouts/{workoutId}");
     }
 
     private async Task<WorkoutResponse?> ParseWorkoutResponse(HttpResponseMessage response)

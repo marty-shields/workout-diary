@@ -4,22 +4,16 @@ namespace Api.IntegrationTests.Builders;
 
 public class WorkoutRequestBuilder
 {
-    private Exercise[]? _exercises;
+    private Exercise[] _exercises = Array.Empty<Exercise>();
     private string _notes = "Test";
-    private int? _totalDurationMinutes = 30;
-    private DateTime? _workoutDate = DateTime.UtcNow.AddHours(-1);
+    private int _totalDurationMinutes = 30;
+    private DateTimeOffset _workoutDate = DateTime.UtcNow.AddHours(-1);
 
     public static WorkoutRequestBuilder Create() => new();
 
     public WorkoutRequestBuilder WithExercises(params Exercise[] exercises)
     {
-        _exercises = exercises.Length > 0 ? exercises : null;
-        return this;
-    }
-
-    public WorkoutRequestBuilder WithoutExercises()
-    {
-        _exercises = null;
+        _exercises = exercises;
         return this;
     }
 
@@ -35,13 +29,13 @@ public class WorkoutRequestBuilder
         return this;
     }
 
-    public WorkoutRequestBuilder WithDuration(int? duration)
+    public WorkoutRequestBuilder WithDuration(int duration)
     {
         _totalDurationMinutes = duration;
         return this;
     }
 
-    public WorkoutRequestBuilder WithWorkoutDate(DateTime? date)
+    public WorkoutRequestBuilder WithWorkoutDate(DateTimeOffset date)
     {
         _workoutDate = date;
         return this;

@@ -4,12 +4,12 @@ namespace Api.IntegrationTests.Builders;
 
 public class ExerciseBuilder
 {
-    private Guid? _id = Guid.CreateVersion7();
-    private WorkoutSet[]? _sets = [WorkoutSetBuilder.Create().Build()];
+    private Guid _id = Guid.CreateVersion7();
+    private WorkoutSet[] _sets = [WorkoutSetBuilder.Create().Build()];
 
     public static ExerciseBuilder Create() => new();
 
-    public ExerciseBuilder WithId(Guid? id)
+    public ExerciseBuilder WithId(Guid id)
     {
         _id = id;
         return this;
@@ -17,13 +17,7 @@ public class ExerciseBuilder
 
     public ExerciseBuilder WithSets(params WorkoutSet[] sets)
     {
-        _sets = sets.Length > 0 ? sets : null;
-        return this;
-    }
-
-    public ExerciseBuilder WithoutSets()
-    {
-        _sets = null;
+        _sets = sets;
         return this;
     }
 

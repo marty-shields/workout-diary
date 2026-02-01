@@ -25,6 +25,7 @@ builder.Services.AddDbContext<WorkoutContext>(options =>
 builder.Services.AddRepositories();
 builder.Services.AddServices();
 builder.Services.AddQueries();
+builder.Services.AddControllers();
 
 WebApplication app = builder.Build();
 app.UseHttpsRedirection();
@@ -35,6 +36,6 @@ if (app.Environment.IsDevelopment())
     app.MapScalarApiReference();
 }
 
-app.MapGroup("/workouts").MapWorkoutsApi();
+app.MapControllers();
 
 app.Run();
