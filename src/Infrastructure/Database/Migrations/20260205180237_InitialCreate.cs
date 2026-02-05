@@ -15,16 +15,16 @@ namespace Infrastructure.Migrations
                 name: "Exercises",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "TEXT", nullable: false),
-                    Name = table.Column<string>(type: "TEXT", maxLength: 500, nullable: false),
-                    Force = table.Column<int>(type: "INTEGER", nullable: true),
-                    Level = table.Column<int>(type: "INTEGER", nullable: false),
-                    Mechanic = table.Column<int>(type: "INTEGER", nullable: true),
-                    Equipment = table.Column<int>(type: "INTEGER", nullable: true),
-                    PrimaryMuscles = table.Column<string>(type: "TEXT", nullable: false),
-                    SecondaryMuscles = table.Column<string>(type: "TEXT", nullable: true),
-                    Instructions = table.Column<string>(type: "TEXT", nullable: false),
-                    Category = table.Column<int>(type: "INTEGER", nullable: false)
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    Name = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: false),
+                    Force = table.Column<int>(type: "integer", nullable: true),
+                    Level = table.Column<int>(type: "integer", nullable: false),
+                    Mechanic = table.Column<int>(type: "integer", nullable: true),
+                    Equipment = table.Column<int>(type: "integer", nullable: true),
+                    PrimaryMuscles = table.Column<int[]>(type: "integer[]", nullable: false),
+                    SecondaryMuscles = table.Column<int[]>(type: "integer[]", nullable: true),
+                    Instructions = table.Column<string[]>(type: "text[]", nullable: false),
+                    Category = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -35,10 +35,10 @@ namespace Infrastructure.Migrations
                 name: "Workouts",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "TEXT", nullable: false),
-                    Notes = table.Column<string>(type: "TEXT", nullable: true),
-                    TotalDurationMinutes = table.Column<int>(type: "INTEGER", nullable: false),
-                    WorkoutDate = table.Column<DateTime>(type: "TEXT", nullable: false)
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    Notes = table.Column<string>(type: "text", nullable: true),
+                    TotalDurationMinutes = table.Column<int>(type: "integer", nullable: false),
+                    WorkoutDate = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -49,11 +49,11 @@ namespace Infrastructure.Migrations
                 name: "WorkoutActivities",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "TEXT", nullable: false),
-                    Repetitions = table.Column<int>(type: "INTEGER", nullable: false),
-                    WeightKg = table.Column<double>(type: "REAL", nullable: false),
-                    WorkoutId = table.Column<Guid>(type: "TEXT", nullable: false),
-                    ExerciseId = table.Column<Guid>(type: "TEXT", nullable: false)
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    Repetitions = table.Column<int>(type: "integer", nullable: false),
+                    WeightKg = table.Column<double>(type: "double precision", nullable: false),
+                    WorkoutId = table.Column<Guid>(type: "uuid", nullable: false),
+                    ExerciseId = table.Column<Guid>(type: "uuid", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -81,6 +81,11 @@ namespace Infrastructure.Migrations
                 name: "IX_WorkoutActivities_WorkoutId",
                 table: "WorkoutActivities",
                 column: "WorkoutId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Workouts_WorkoutDate",
+                table: "Workouts",
+                column: "WorkoutDate");
         }
 
         /// <inheritdoc />
