@@ -3,7 +3,6 @@ using Api.Converters;
 using Api.Extensions;
 using Core.ExtensionMethods;
 using Infrastructure.Database.ExtensionMethods;
-using Microsoft.EntityFrameworkCore;
 using Scalar.AspNetCore;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
@@ -17,21 +16,24 @@ builder.Services.Configure<Microsoft.AspNetCore.Http.Json.JsonOptions>(options =
 });
 
 builder.Services.AddDbContext(builder.Configuration.GetConnectionString("WorkoutContext")!);
+builder.Services.AddHealthChecks().AddDbContextHealthCheck();
 builder.Services.AddRepositories();
+
 builder.Services.AddServices();
 builder.Services.AddQueries();
 builder.Services.AddControllers();
-builder.Services.AddHealthChecks().AddDbContextHealthCheck();
 
 WebApplication app = builder.Build();
-app.UseHttpsRedirection();
-
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
     app.MapScalarApiReference();
+    app.UseDeveloperExceptionPage();
 }
 
+app.SetupDatabase();
+
+app.UseHttpsRedirection();
 app.MapControllers();
 app.MapHealthChecks("/health");
 
