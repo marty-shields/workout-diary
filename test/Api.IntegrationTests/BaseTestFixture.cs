@@ -1,3 +1,6 @@
+using System.IdentityModel.Tokens.Jwt;
+using System.Net.Http.Headers;
+using System.Security.Claims;
 using Infrastructure.Database;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -37,4 +40,22 @@ public class BaseTestFixture
         }
         await factory.DisposeAsync();
     }
+
+    internal void AddJWTTokenToRequest(string subject)
+    {
+        IEnumerable<Claim> claims = [
+            new Claim("sub", subject)
+        ];
+        var token = new JwtSecurityToken(
+            issuer: "dotnet-user-jwts",
+            audience: "https://localhost:7019",
+            claims: claims,
+            notBefore: DateTime.UtcNow.AddMinutes(-1),
+            expires: DateTime.UtcNow.AddHours(1)
+        );
+
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(
+            "Bearer", new JwtSecurityTokenHandler().WriteToken(token));
+    }
+
 }

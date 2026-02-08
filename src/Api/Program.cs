@@ -6,6 +6,7 @@ using Infrastructure.Database.ExtensionMethods;
 using Scalar.AspNetCore;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
+builder.Services.AddAuthentication().AddJwtBearer();
 builder.SetupLogging();
 builder.Services.AddOpenApi();
 builder.Services.AddValidation();

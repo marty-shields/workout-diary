@@ -147,6 +147,7 @@ public class GETWorkoutTests : BaseTestFixture
 
     private async Task<HttpResponseMessage> GetWorkout(string workoutId)
     {
+        AddJWTTokenToRequest(Guid.NewGuid().ToString());
         return await client.GetAsync($"/api/workouts/{workoutId}");
     }
 

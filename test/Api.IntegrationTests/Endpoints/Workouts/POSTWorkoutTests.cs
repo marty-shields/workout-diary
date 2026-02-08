@@ -410,6 +410,7 @@ public class POSTWorkoutTests : BaseTestFixture
 
     private async Task<HttpResponseMessage> PostWorkout(WorkoutRequest request)
     {
+        AddJWTTokenToRequest(Guid.NewGuid().ToString());
         var json = JsonSerializer.Serialize(request);
         var content = new StringContent(json, System.Text.Encoding.UTF8, "application/json");
         return await client.PostAsync("/api/workouts", content);
@@ -417,6 +418,7 @@ public class POSTWorkoutTests : BaseTestFixture
 
     private async Task<HttpResponseMessage> PostWorkoutAnon(object request)
     {
+        AddJWTTokenToRequest(Guid.NewGuid().ToString());
         var json = JsonSerializer.Serialize(request);
         var content = new StringContent(json, System.Text.Encoding.UTF8, "application/json");
         return await client.PostAsync("/api/workouts", content);

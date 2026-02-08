@@ -2,12 +2,14 @@ using Api.Models.Workouts;
 using Core.Queries.Workouts.GetWorkoutByIdQuery;
 using Core.Queries.Workouts.GetWorkoutsQuery;
 using Core.Services.Workouts;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Api.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
+[Authorize]
 public class WorkoutsController : ControllerBase
 {
     private readonly IGetWorkoutsQuery getWorkoutsQuery;
