@@ -46,16 +46,16 @@ public class BaseTestFixture
         IEnumerable<Claim> claims = [
             new Claim("sub", subject)
         ];
-        var token = new JwtSecurityToken(
-            issuer: "dotnet-user-jwts",
-            audience: "https://localhost:7019",
-            claims: claims,
-            notBefore: DateTime.UtcNow.AddMinutes(-1),
-            expires: DateTime.UtcNow.AddHours(1)
+        var token = JwtTokenProvider.JwtSecurityTokenHandler.WriteToken(
+            new JwtSecurityToken(
+                JwtTokenProvider.Issuer,
+                JwtTokenProvider.Audience,
+                claims,
+                expires: DateTime.Now.AddMinutes(30),
+                signingCredentials: JwtTokenProvider.SigningCredentials
+            )
         );
-
-        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(
-            "Bearer", new JwtSecurityTokenHandler().WriteToken(token));
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
     }
 
 }

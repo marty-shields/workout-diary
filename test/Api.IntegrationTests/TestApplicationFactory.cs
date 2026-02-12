@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 
 namespace Api.IntegrationTests;
 
@@ -15,10 +16,15 @@ public class TestApplicationFactory : WebApplicationFactory<Program>
         var connectionString = $"User ID=postgres;Password=password;Host=localhost;Port=5432;Database={Guid.CreateVersion7()};";
         builder.ConfigureTestServices(services =>
         {
-            services.PostConfigure<JwtBearerOptions>(JwtBearerDefaults.AuthenticationScheme, options =>
+            services.Configure<JwtBearerOptions>(JwtBearerDefaults.AuthenticationScheme, options =>
             {
-                options.TokenValidationParameters.ValidateIssuerSigningKey = false;
-                options.TokenValidationParameters.RequireSignedTokens = false;
+                options.Configuration = new OpenIdConnectConfiguration
+                {
+                    Issuer = JwtTokenProvider.Issuer,
+                };
+                options.TokenValidationParameters.ValidIssuer = JwtTokenProvider.Issuer;
+                options.TokenValidationParameters.ValidAudience = JwtTokenProvider.Audience;
+                options.Configuration.SigningKeys.Add(JwtTokenProvider.SecurityKey);
             });
 
             services.ConfigureDbContext<WorkoutContext>(options =>
