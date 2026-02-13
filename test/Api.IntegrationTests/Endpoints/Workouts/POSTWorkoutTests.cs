@@ -16,6 +16,62 @@ public class POSTWorkoutTests : BaseTestFixture
     private const int DefaultDuration = 30;
     private static readonly DateTime DefaultWorkoutDate = DateTime.UtcNow.AddHours(-1);
 
+    #region Validation Tests - Authentication
+
+    [Test]
+    public async Task WhenTokenIsMissing_ShouldReturnUnauthorized()
+    {
+        string userId = Guid.NewGuid().ToString();
+        var exercises = new[] { ExerciseBuilder.Create().Build() };
+        var request = WorkoutRequestBuilder.Create().WithExercises(exercises).Build();
+        var json = JsonSerializer.Serialize(request);
+        var content = new StringContent(json, System.Text.Encoding.UTF8, "application/json");
+
+        var response = await client.PostAsync("/api/workouts", content);
+        Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.Unauthorized));
+    }
+
+    [Test]
+    public async Task WhenSubjectClaimIsMissing_ShouldReturnUnauthorized()
+    {
+        string userId = Guid.NewGuid().ToString();
+        var exercises = new[] { ExerciseBuilder.Create().Build() };
+        var request = WorkoutRequestBuilder.Create().WithExercises(exercises).Build();
+
+        // Build a token without the subject claim
+        client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue(
+            "Bearer",
+            JwtTokenBuilder.Create().Build());
+
+        var json = JsonSerializer.Serialize(request);
+        var content = new StringContent(json, System.Text.Encoding.UTF8, "application/json");
+        var response = await client.PostAsync("/api/workouts", content);
+        Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.Unauthorized));
+    }
+
+    #endregion
+
+    #region Validation Tests - User Isolation
+
+    [Test]
+    public async Task WhenWorkoutIsCreated_ShouldBeAssociatedWithRequestingUser()
+    {
+        string userId = Guid.NewGuid().ToString();
+        var exercise = seededExercises.First();
+
+        var exercises = new[] { ExerciseBuilder.Create().WithId(exercise.Id).Build() };
+        var request = WorkoutRequestBuilder.Create().WithExercises(exercises).Build();
+
+        var response = await PostWorkout(request, userId);
+        Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.Created));
+
+        var workoutInDb = await GetWorkoutFromDatabase();
+        Assert.That(workoutInDb, Is.Not.Null);
+        Assert.That(workoutInDb!.UserId, Is.EqualTo(userId));
+    }
+
+    #endregion
+
     #region Validation Tests - Request Properties
 
     [Test]

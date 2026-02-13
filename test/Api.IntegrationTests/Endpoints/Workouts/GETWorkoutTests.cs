@@ -9,6 +9,34 @@ namespace Api.IntegrationTests.Endpoints.Workouts;
 
 public class GETWorkoutTests : BaseTestFixture
 {
+    #region Validation Tests - Authentication
+
+    [Test]
+    public async Task WhenTokenIsMissing_ShouldReturnUnauthorized()
+    {
+        string userId = Guid.NewGuid().ToString();
+        var workoutId = Guid.CreateVersion7();
+        var response = await client.GetAsync($"/api/workouts/{workoutId}");
+        Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.Unauthorized));
+    }
+
+    [Test]
+    public async Task WhenSubjectClaimIsMissing_ShouldReturnUnauthorized()
+    {
+        string userId = Guid.NewGuid().ToString();
+        var workoutId = Guid.CreateVersion7();
+
+        // Build a token without the subject claim
+        client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue(
+            "Bearer",
+            JwtTokenBuilder.Create().Build());
+
+        var response = await client.GetAsync($"/api/workouts/{workoutId}");
+        Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.Unauthorized));
+    }
+
+    #endregion
+
     #region Validation Tests - Invalid ID Format
 
     [Test]
@@ -31,6 +59,25 @@ public class GETWorkoutTests : BaseTestFixture
         var response = await GetWorkout(userId, nonExistentId.ToString());
 
         Assert.That(response.StatusCode, Is.AnyOf(HttpStatusCode.NotFound));
+    }
+
+    #endregion
+
+    #region Validation Tests - User Isolation
+
+    [Test]
+    public async Task WhenWorkoutBelongsToAnotherUser_ShouldReturnNotFound()
+    {
+        var exercise = seededExercises.First();
+        var workoutId = Guid.CreateVersion7();
+        var workoutDate = DateTimeOffset.UtcNow.AddHours(-2);
+        string ownerUserId = Guid.NewGuid().ToString();
+        string requestingUserId = Guid.NewGuid().ToString();
+
+        await SeedWorkoutWithSingleExercise(workoutId, ownerUserId, exercise.Id, workoutDate);
+
+        var response = await GetWorkout(requestingUserId, workoutId.ToString());
+        Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.NotFound));
     }
 
     #endregion

@@ -9,6 +9,52 @@ namespace Api.IntegrationTests.Endpoints.Workouts;
 
 public class GETWorkoutsTests : BaseTestFixture
 {
+    #region Validation Tests - Authentication
+
+    [Test]
+    public async Task WhenTokenIsMissing_ShouldReturnUnauthorized()
+    {
+        var response = await client.GetAsync("/api/workouts");
+        Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.Unauthorized));
+    }
+
+    [Test]
+    public async Task WhenSubjectClaimIsMissing_ShouldReturnUnauthorized()
+    {
+        // Build a token without the subject claim
+        client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue(
+            "Bearer",
+            JwtTokenBuilder.Create().Build());
+
+        var response = await client.GetAsync("/api/workouts");
+        Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.Unauthorized));
+    }
+
+    #endregion
+
+    #region Validation Tests - User Isolation
+
+    [Test]
+    public async Task WhenWorkoutsExistForAnotherUser_ShouldReturnEmptyList()
+    {
+        var exercise = seededExercises.First();
+        var workoutId = Guid.CreateVersion7();
+        var workoutDate = DateTimeOffset.UtcNow.AddHours(-2);
+        string ownerUserId = Guid.NewGuid().ToString();
+        string requestingUserId = Guid.NewGuid().ToString();
+
+        await SeedWorkoutWithSingleExercise(workoutId, ownerUserId, exercise.Id, workoutDate);
+
+        var response = await GetWorkouts(requestingUserId);
+        Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
+
+        var workouts = await ParseWorkoutsResponse(response);
+        Assert.That(workouts, Is.Not.Null);
+        Assert.That(workouts, Is.Empty);
+    }
+
+    #endregion
+
     #region Happy Path Tests
 
     [Test]

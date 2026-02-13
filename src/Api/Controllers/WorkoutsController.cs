@@ -32,7 +32,7 @@ public class WorkoutsController : ControllerBase
     public async Task<IResult> Get(CancellationToken cancellationToken)
     {
         var userId = GetUserId();
-        if (userId is null) return Results.Forbid();
+        if (userId is null) return Results.Unauthorized();
         var result = await getWorkoutsQuery.ExecuteAsync(userId, cancellationToken);
         return Results.Ok(result.Value!.Select(x => WorkoutResponse.FromEntity(x)));
     }
@@ -41,7 +41,7 @@ public class WorkoutsController : ControllerBase
     public async Task<IResult> Get(Guid id, CancellationToken cancellationToken)
     {
         var userId = GetUserId();
-        if (userId is null) return Results.Forbid();
+        if (userId is null) return Results.Unauthorized();
         var result = await getWorkoutByIdQuery.ExecuteAsync(id, userId, cancellationToken);
         if (!result.IsSuccess)
         {
@@ -55,7 +55,7 @@ public class WorkoutsController : ControllerBase
     public async Task<IResult> Post(WorkoutRequest request, CancellationToken cancellationToken)
     {
         var userId = GetUserId();
-        if (userId is null) return Results.Forbid();
+        if (userId is null) return Results.Unauthorized();
         var result = await workoutCreationService.CreateWorkoutAsync(request.ToWorkoutCreationServiceRequest(userId), cancellationToken);
         if (!result.IsSuccess)
         {
