@@ -3,6 +3,7 @@ using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Core.ValueObjects.Exercise;
+using Infrastructure.Database.ExtensionMethods;
 using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.Database.SeedData;
@@ -14,10 +15,7 @@ public static class ExerciseDataSeeder
         using var stream = new FileStream(jsonFilePath, FileMode.Open, FileAccess.Read);
         var exerciseData = JsonSerializer.Deserialize<List<Exercise>>(
             stream,
-            new JsonSerializerOptions
-            {
-                PropertyNameCaseInsensitive = true
-            });
+            GetJsonSerializerOptions());
 
         if (ExercideDataExists(exerciseData))
         {
@@ -27,7 +25,7 @@ public static class ExerciseDataSeeder
         context.SaveChanges();
     }
 
-    public static async Task SeedListFromJsonAsync(string jsonFilePath, DbContext context, CancellationToken cancellationToken)
+    public static async Task<IEnumerable<Core.AggregateRoots.Exercise>> SeedListFromJsonAsync(string jsonFilePath, DbContext context, CancellationToken cancellationToken)
     {
         using var stream = new FileStream(jsonFilePath, FileMode.Open, FileAccess.Read);
         var exerciseData = await JsonSerializer.DeserializeAsync<List<Exercise>>(
@@ -37,12 +35,21 @@ public static class ExerciseDataSeeder
 
         if (ExercideDataExists(exerciseData))
         {
-            await context.Set<Tables.Exercise>().AddRangeAsync(exerciseData!.Select(e => e.ToTable()), cancellationToken);
+            var exerciseTable = exerciseData!.Select(e => e.ToTable());
+            await context.Set<Tables.Exercise>().AddRangeAsync(exerciseTable, cancellationToken);
             await context.SaveChangesAsync(cancellationToken);
+            return exerciseTable.Select(et => et.ToEntity());
         }
+
+        return Array.Empty<Core.AggregateRoots.Exercise>();
     }
 
-    private static bool ExercideDataExists(List<Exercise>? exerciseData) => exerciseData is not null && exerciseData.Any();
+    public static async Task SeedListFromJsonAsync(IEnumerable<Exercise>? exercises, DbContext context, CancellationToken cancellationToken)
+    {
+
+    }
+
+    private static bool ExercideDataExists(IEnumerable<Exercise>? exerciseData) => exerciseData is not null && exerciseData.Any();
 
     public static JsonSerializerOptions GetJsonSerializerOptions()
     {

@@ -40,13 +40,12 @@ public class GETWorkoutTests : BaseTestFixture
     [Test]
     public async Task WhenWorkoutExists_ShouldReturnOkWithWorkoutData()
     {
-        var exerciseId = Guid.CreateVersion7();
+        var exercise = seededExercises.First();
         var workoutId = Guid.CreateVersion7();
         var workoutDate = DateTimeOffset.UtcNow.AddHours(-2);
         string userId = Guid.NewGuid().ToString();
 
-        await SeedExercise(exerciseId, "Pushups");
-        await SeedWorkoutWithSingleExercise(workoutId, userId, exerciseId, workoutDate);
+        await SeedWorkoutWithSingleExercise(workoutId, userId, exercise.Id, workoutDate);
 
         var response = await GetWorkout(userId, workoutId.ToString());
         Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK),
@@ -60,7 +59,7 @@ public class GETWorkoutTests : BaseTestFixture
         Assert.That(workout.WorkoutDate.ToString(), Is.EqualTo(workoutDate.ToString()));
         Assert.That(workout.WorkoutActivities.Count(), Is.EqualTo(1));
         var activity = workout.WorkoutActivities.First();
-        Assert.That(activity.ExerciseName, Is.EqualTo("Pushups"));
+        Assert.That(activity.ExerciseName, Is.EqualTo(exercise.Name));
         Assert.That(activity.Sets.Count(), Is.EqualTo(1));
         var set = activity.Sets.First();
         Assert.That(set.Repetitions, Is.EqualTo(10));
@@ -70,15 +69,13 @@ public class GETWorkoutTests : BaseTestFixture
     [Test]
     public async Task WhenWorkoutHasMultipleExercisesWithMultipleSets_ShouldReturnAllData()
     {
-        var exercise1Id = Guid.CreateVersion7();
-        var exercise2Id = Guid.CreateVersion7();
+        var exercise1 = seededExercises.First();
+        var exercise2 = seededExercises.Last();
         var workoutId = Guid.CreateVersion7();
         var workoutDate = DateTime.UtcNow.AddHours(-1);
         string userId = Guid.NewGuid().ToString();
 
-        await SeedExercise(exercise1Id, "Pushups");
-        await SeedExercise(exercise2Id, "Squats");
-        await SeedWorkoutWithMultipleExercisesAndSets(workoutId, userId, exercise1Id, exercise2Id, workoutDate);
+        await SeedWorkoutWithMultipleExercisesAndSets(workoutId, userId, exercise1.Id, exercise2.Id, workoutDate);
 
         var response = await GetWorkout(userId, workoutId.ToString());
         Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
@@ -89,32 +86,31 @@ public class GETWorkoutTests : BaseTestFixture
         Assert.That(workout.WorkoutActivities.Count(), Is.EqualTo(2)); // 2 exercises
 
         // Verify Pushups (2 sets)
-        var pushups = workout.WorkoutActivities.FirstOrDefault(a => a.ExerciseName == "Pushups");
-        Assert.That(pushups, Is.Not.Null);
-        Assert.That(pushups!.Sets.Count(), Is.EqualTo(2));
-        var pushupSets = pushups.Sets.ToList();
-        Assert.That(pushupSets, Has.One.Matches<Sets>(s => s.Repetitions == 10 && s.WeightKg == 5.0));
-        Assert.That(pushupSets, Has.One.Matches<Sets>(s => s.Repetitions == 8 && s.WeightKg == 7.5));
+        var activity1 = workout.WorkoutActivities.FirstOrDefault(a => a.ExerciseName == exercise1.Name);
+        Assert.That(activity1, Is.Not.Null);
+        Assert.That(activity1!.Sets.Count(), Is.EqualTo(2));
+        var activity1Sets = activity1.Sets.ToList();
+        Assert.That(activity1Sets, Has.One.Matches<Sets>(s => s.Repetitions == 10 && s.WeightKg == 5.0));
+        Assert.That(activity1Sets, Has.One.Matches<Sets>(s => s.Repetitions == 8 && s.WeightKg == 7.5));
 
         // Verify Squats (3 sets)
-        var squats = workout.WorkoutActivities.FirstOrDefault(a => a.ExerciseName == "Squats");
-        Assert.That(squats, Is.Not.Null);
-        Assert.That(squats!.Sets.Count(), Is.EqualTo(3));
-        var squatSets = squats.Sets.ToList();
-        Assert.That(squatSets, Has.One.Matches<Sets>(s => s.Repetitions == 12 && s.WeightKg == 20.0));
-        Assert.That(squatSets, Has.One.Matches<Sets>(s => s.Repetitions == 10 && s.WeightKg == 25.0));
-        Assert.That(squatSets, Has.One.Matches<Sets>(s => s.Repetitions == 8 && s.WeightKg == 30.0));
+        var activity2 = workout.WorkoutActivities.FirstOrDefault(a => a.ExerciseName == exercise2.Name);
+        Assert.That(activity2, Is.Not.Null);
+        Assert.That(activity2!.Sets.Count(), Is.EqualTo(3));
+        var activity2Sets = activity2.Sets.ToList();
+        Assert.That(activity2Sets, Has.One.Matches<Sets>(s => s.Repetitions == 12 && s.WeightKg == 20.0));
+        Assert.That(activity2Sets, Has.One.Matches<Sets>(s => s.Repetitions == 10 && s.WeightKg == 25.0));
+        Assert.That(activity2Sets, Has.One.Matches<Sets>(s => s.Repetitions == 8 && s.WeightKg == 30.0));
     }
 
     [Test]
     public async Task WhenWorkoutHasNullNotes_ShouldReturnWithoutNotes()
     {
-        var exerciseId = Guid.CreateVersion7();
+        var exercise = seededExercises.First();
         var workoutId = Guid.CreateVersion7();
         string userId = Guid.NewGuid().ToString();
 
-        await SeedExercise(exerciseId, "Bench Press");
-        await SeedWorkoutWithNullNotes(workoutId, userId, exerciseId);
+        await SeedWorkoutWithNullNotes(workoutId, userId, exercise.Id);
 
         var response = await GetWorkout(userId, workoutId.ToString());
         Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
@@ -129,12 +125,11 @@ public class GETWorkoutTests : BaseTestFixture
     [Test]
     public async Task WhenExerciseHasZeroWeight_ShouldReturnZeroWeight()
     {
-        var exerciseId = Guid.CreateVersion7();
+        var exercise = seededExercises.First();
         var workoutId = Guid.CreateVersion7();
         string userId = Guid.NewGuid().ToString();
 
-        await SeedExercise(exerciseId, "Pushups");
-        await SeedWorkoutWithZeroWeight(workoutId, userId, exerciseId);
+        await SeedWorkoutWithZeroWeight(workoutId, userId, exercise.Id);
 
         var response = await GetWorkout(userId, workoutId.ToString());
         Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
@@ -164,14 +159,6 @@ public class GETWorkoutTests : BaseTestFixture
         {
             PropertyNameCaseInsensitive = true
         });
-    }
-
-    private async Task SeedExercise(Guid exerciseId, string name)
-    {
-        using var scope = factory.Services.CreateScope();
-        var db = scope.ServiceProvider.GetRequiredService<WorkoutContext>();
-        db.Exercises.Add(ExerciseTableBuilder.Create().WithId(exerciseId).WithName(name).Build());
-        await db.SaveChangesAsync();
     }
 
     private async Task SeedWorkoutWithSingleExercise(Guid workoutId, string userId, Guid exerciseId, DateTimeOffset workoutDate)

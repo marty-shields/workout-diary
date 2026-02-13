@@ -262,15 +262,13 @@ public class POSTWorkoutTests : BaseTestFixture
     public async Task WhenExerciseDoesNotExistInDatabase_ShouldReturnBadRequest()
     {
         string userId = Guid.NewGuid().ToString();
-        var pushupId = Guid.CreateVersion7();
-        var squatsId = Guid.CreateVersion7();
-        await SeedExercises((pushupId, "Pushups"), (squatsId, "Squats"));
+        var exercise1 = seededExercises.First();
 
         var missingId1 = Guid.CreateVersion7();
         var missingId2 = Guid.CreateVersion7();
         var exercises = new[]
         {
-            ExerciseBuilder.Create().WithId(pushupId).Build(),
+            ExerciseBuilder.Create().WithId(exercise1.Id).Build(),
             ExerciseBuilder.Create().WithId(missingId1).Build(),
             ExerciseBuilder.Create().WithId(missingId2).Build()
         };
@@ -290,10 +288,9 @@ public class POSTWorkoutTests : BaseTestFixture
     public async Task WhenSingleValidActivity_ShouldReturnCreated()
     {
         string userId = Guid.NewGuid().ToString();
-        var pushupId = Guid.CreateVersion7();
-        await SeedExercises((pushupId, "Pushups"));
+        var exercise = seededExercises.First();
 
-        var exercises = new[] { ExerciseBuilder.Create().WithId(pushupId).Build() };
+        var exercises = new[] { ExerciseBuilder.Create().WithId(exercise.Id).Build() };
         var request = WorkoutRequestBuilder.Create().WithExercises(exercises).Build();
 
         var response = await PostWorkout(request, userId);
@@ -304,7 +301,7 @@ public class POSTWorkoutTests : BaseTestFixture
         Assert.That(workoutInDb!.WorkoutActivities.Count, Is.EqualTo(1));
 
         var activity = workoutInDb.WorkoutActivities.First();
-        Assert.That(activity.Exercise.Id, Is.EqualTo(pushupId));
+        Assert.That(activity.Exercise.Id, Is.EqualTo(exercise.Id));
         Assert.That(activity.Repetitions, Is.EqualTo(10));
         Assert.That(activity.WeightKg, Is.EqualTo(5.0));
     }
@@ -313,10 +310,9 @@ public class POSTWorkoutTests : BaseTestFixture
     public async Task MultipleValidActivities_ShouldReturnCreated()
     {
         string userId = Guid.NewGuid().ToString();
-        var pushupId = Guid.CreateVersion7();
-        var squatId = Guid.CreateVersion7();
-        var plankId = Guid.CreateVersion7();
-        await SeedExercises((pushupId, "Pushups"), (squatId, "Squats"), (plankId, "Plank"));
+        var exercise1 = seededExercises.First();
+        var exercise2 = seededExercises.ElementAt(1);
+        var exercise3 = seededExercises.ElementAt(2);
 
         var set1 = WorkoutSetBuilder.Create().WithRepetitions(30).WithWeightKg(0.0).Build();
         var set2 = WorkoutSetBuilder.Create().WithRepetitions(20).WithWeightKg(0.0).Build();
@@ -326,14 +322,14 @@ public class POSTWorkoutTests : BaseTestFixture
 
         var repeatedExercises = new[]
         {
-            ExerciseBuilder.Create().WithId(plankId).WithSets(set1).Build(),
-            ExerciseBuilder.Create().WithId(plankId).WithSets(set2, set3).Build()
+            ExerciseBuilder.Create().WithId(exercise3.Id).WithSets(set1).Build(),
+            ExerciseBuilder.Create().WithId(exercise3.Id).WithSets(set2, set3).Build()
         };
 
         var noneRepeatedExercises = new[]
         {
-            ExerciseBuilder.Create().WithId(pushupId).WithSets(set4).Build(),
-            ExerciseBuilder.Create().WithId(squatId).WithSets(set5).Build()
+            ExerciseBuilder.Create().WithId(exercise1.Id).WithSets(set4).Build(),
+            ExerciseBuilder.Create().WithId(exercise2.Id).WithSets(set5).Build()
         };
 
         var exercises = noneRepeatedExercises.Concat(repeatedExercises).ToArray();
@@ -357,19 +353,6 @@ public class POSTWorkoutTests : BaseTestFixture
     #endregion
 
     #region Helper Methods
-
-    private async Task SeedExercises(params (Guid id, string name)[] exercisesToSeed)
-    {
-        using var scope = factory.Services.CreateScope();
-        var db = scope.ServiceProvider.GetRequiredService<WorkoutContext>();
-
-        foreach (var (id, name) in exercisesToSeed)
-        {
-            db.Exercises.Add(ExerciseTableBuilder.Create().WithId(id).WithName(name).Build());
-        }
-
-        await db.SaveChangesAsync();
-    }
 
     private async Task<Infrastructure.Database.Tables.Workout?> GetWorkoutFromDatabase()
     {
