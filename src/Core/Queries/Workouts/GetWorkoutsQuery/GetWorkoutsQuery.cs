@@ -12,6 +12,6 @@ public class GetWorkoutsQuery : IGetWorkoutsQuery
         _workoutRepository = workoutRepository;
     }
 
-    public async Task<Result<IEnumerable<Workout>>> ExecuteAsync(string userId, CancellationToken cancellationToken)
-        => Result<IEnumerable<Workout>>.Success(await _workoutRepository.GetAsync(userId, cancellationToken));
+    public async Task<Result<PaginatedResult<Workout>>> ExecuteAsync(string userId, int pageSize, int pageNumber, CancellationToken cancellationToken)
+        => Result<PaginatedResult<Workout>>.Success(await _workoutRepository.GetAsync(userId, pageSize, pageNumber, cancellationToken));
 }

@@ -1,3 +1,5 @@
+using Core.Queries;
+
 namespace Api.Models.Workouts;
 
 public class WorkoutResponse
@@ -25,6 +27,17 @@ public class WorkoutResponse
                     WeightKg = s.WeightKg
                 })
             })
+        };
+    }
+
+    public static PaginatedResult<WorkoutResponse> FromResult(PaginatedResult<Core.AggregateRoots.Workout> workouts)
+    {
+        return new PaginatedResult<WorkoutResponse>
+        {
+            PageNumber = workouts.PageNumber,
+            PageSize = workouts.PageSize,
+            TotalRecords = workouts.TotalRecords,
+            Items = workouts.Items.Select(x => FromEntity(x))
         };
     }
 }

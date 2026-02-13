@@ -5,5 +5,5 @@ namespace Core.Queries.Workouts.GetWorkoutsQuery;
 public interface IGetWorkoutsQuery
 {
 
-    Task<Result<IEnumerable<Workout>>> ExecuteAsync(string userId, CancellationToken cancellationToken);
+    Task<Result<PaginatedResult<Workout>>> ExecuteAsync(string userId, int pageSize, int pageNumber, CancellationToken cancellationToken);
 }

@@ -21,7 +21,6 @@ public class POSTWorkoutTests : BaseTestFixture
     [Test]
     public async Task WhenTokenIsMissing_ShouldReturnUnauthorized()
     {
-        string userId = Guid.NewGuid().ToString();
         var exercises = new[] { ExerciseBuilder.Create().Build() };
         var request = WorkoutRequestBuilder.Create().WithExercises(exercises).Build();
         var json = JsonSerializer.Serialize(request);
@@ -34,7 +33,6 @@ public class POSTWorkoutTests : BaseTestFixture
     [Test]
     public async Task WhenSubjectClaimIsMissing_ShouldReturnUnauthorized()
     {
-        string userId = Guid.NewGuid().ToString();
         var exercises = new[] { ExerciseBuilder.Create().Build() };
         var request = WorkoutRequestBuilder.Create().WithExercises(exercises).Build();
 

@@ -29,12 +29,12 @@ public class WorkoutsController : ControllerBase
     private string? GetUserId() => User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
 
     [HttpGet(Name = "GetWorkouts")]
-    public async Task<IResult> Get(CancellationToken cancellationToken)
+    public async Task<IResult> Get(GetWorkoutsRequest request, CancellationToken cancellationToken)
     {
         var userId = GetUserId();
         if (userId is null) return Results.Unauthorized();
-        var result = await getWorkoutsQuery.ExecuteAsync(userId, cancellationToken);
-        return Results.Ok(result.Value!.Select(x => WorkoutResponse.FromEntity(x)));
+        var result = await getWorkoutsQuery.ExecuteAsync(userId, request.PageSize, request.PageNumber, cancellationToken);
+        return Results.Ok(WorkoutResponse.FromResult(result.Value!));
     }
 
     [HttpGet("{id:guid}", Name = "GetWorkoutById")]
