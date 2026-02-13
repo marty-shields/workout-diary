@@ -48,7 +48,7 @@ public class WorkoutRequest : IValidatableObject
         }
     }
 
-    public WorkoutCreationServiceRequest ToWorkoutCreationServiceRequest()
+    public WorkoutCreationServiceRequest ToWorkoutCreationServiceRequest(string userId)
     {
         var workoutActivities = new List<WorkoutCreationServiceRequest.WorkoutActivity>();
         foreach (var group in Exercises!.GroupBy(e => e.Id))
@@ -70,6 +70,7 @@ public class WorkoutRequest : IValidatableObject
 
         return new WorkoutCreationServiceRequest
         {
+            UserId = userId,
             Notes = Notes,
             TotalDurationMinutes = TotalDurationMinutes,
             WorkoutDate = WorkoutDate,

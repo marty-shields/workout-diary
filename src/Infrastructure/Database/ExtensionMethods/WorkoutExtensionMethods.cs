@@ -12,6 +12,7 @@ public static class WorkoutExtensionMethods
             return new AggregateRootWorkout
             {
                 Id = workout.Id,
+                UserId = workout.UserId,
                 Notes = workout.Notes,
                 TotalDurationMinutes = workout.TotalDurationMinutes,
                 WorkoutDate = workout.WorkoutDate,
@@ -37,6 +38,7 @@ public static class WorkoutExtensionMethods
             return new Workout
             {
                 Id = workout.Id,
+                UserId = workout.UserId,
                 Notes = workout.Notes,
                 TotalDurationMinutes = workout.TotalDurationMinutes,
                 WorkoutDate = workout.WorkoutDate
@@ -54,6 +56,7 @@ public static class WorkoutExtensionMethods
                     {
                         Id = Guid.CreateVersion7(),
                         WorkoutId = workout.Id,
+                        WorkoutUserId = workout.UserId,
                         ExerciseId = wa.Exercise.Id,
                         Repetitions = set.Repetitions,
                         WeightKg = set.WeightKg

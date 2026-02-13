@@ -1,6 +1,6 @@
-using System.IdentityModel.Tokens.Jwt;
 using System.Net.Http.Headers;
 using System.Security.Claims;
+using Api.IntegrationTests.Builders;
 using Infrastructure.Database;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -43,19 +43,11 @@ public class BaseTestFixture
 
     internal void AddJWTTokenToRequest(string subject)
     {
-        IEnumerable<Claim> claims = [
-            new Claim("sub", subject)
-        ];
-        var token = JwtTokenProvider.JwtSecurityTokenHandler.WriteToken(
-            new JwtSecurityToken(
-                JwtTokenProvider.Issuer,
-                JwtTokenProvider.Audience,
-                claims,
-                expires: DateTime.Now.AddMinutes(30),
-                signingCredentials: JwtTokenProvider.SigningCredentials
-            )
-        );
-        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(
+            "Bearer",
+            JwtTokenBuilder.Create()
+                .WithClaim(new Claim("sub", subject))
+                .Build());
     }
 
 }

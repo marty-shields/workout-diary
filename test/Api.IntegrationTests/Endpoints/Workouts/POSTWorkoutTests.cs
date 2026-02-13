@@ -21,8 +21,9 @@ public class POSTWorkoutTests : BaseTestFixture
     [Test]
     public async Task WhenExercisesPropertyIsMissing_ShouldReturnBadRequest()
     {
+        string userId = Guid.NewGuid().ToString();
         var request = new { notes = DefaultNotes, totalDurationMinutes = DefaultDuration, workoutDate = DefaultWorkoutDate };
-        var response = await PostWorkoutAnon(request);
+        var response = await PostWorkoutAnon(request, userId);
         await AssertValidationError(response, "$", "JSON deserialization for type 'Api.Models.Workouts.WorkoutRequest' was missing required properties including: 'exercises'.");
     }
 
@@ -30,16 +31,17 @@ public class POSTWorkoutTests : BaseTestFixture
     [TestCase("empty", "Exercises", "The field Exercises must be a string or array type with a minimum length of '1'.")]
     public async Task WhenExercisesIsInvalid_ShouldReturnBadRequest(string? exercisesCase, string fieldName, string expectedError)
     {
+        string userId = Guid.NewGuid().ToString();
         HttpResponseMessage response;
         if (exercisesCase == null)
         {
             var request = new { exercises = (Exercise[]?)null, notes = DefaultNotes, totalDurationMinutes = DefaultDuration, workoutDate = DefaultWorkoutDate };
-            response = await PostWorkoutAnon(request);
+            response = await PostWorkoutAnon(request, userId);
         }
         else
         {
             var request = WorkoutRequestBuilder.Create().WithEmptyExercises().Build();
-            response = await PostWorkout(request);
+            response = await PostWorkout(request, userId);
         }
         await AssertValidationError(response, fieldName, expectedError);
     }
@@ -48,43 +50,47 @@ public class POSTWorkoutTests : BaseTestFixture
     [TestCase(-5, "TotalDurationMinutes", "The field TotalDurationMinutes must be between 1 and 2147483647.")]
     public async Task WhenTotalDurationMinutesIsInvalid_ShouldReturnBadRequest(int duration, string fieldName, string expectedError)
     {
+        string userId = Guid.NewGuid().ToString();
         var request = WorkoutRequestBuilder.Create()
             .WithExercises(ExerciseBuilder.Create().Build())
             .WithDuration(duration)
             .Build();
 
-        var response = await PostWorkout(request);
+        var response = await PostWorkout(request, userId);
         await AssertValidationError(response, fieldName, expectedError);
     }
 
     [Test]
     public async Task WhenTotalDurationMinutesPropertyIsMissing_ShouldReturnBadRequest()
     {
+        string userId = Guid.NewGuid().ToString();
         var exercises = new[] { new { id = Guid.CreateVersion7(), sets = new[] { new { repetitions = 10, weightKg = 0.0 } } } };
         var request = new { exercises, notes = DefaultNotes, workoutDate = DefaultWorkoutDate };
-        var response = await PostWorkoutAnon(request);
+        var response = await PostWorkoutAnon(request, userId);
         await AssertValidationError(response, "$", "JSON deserialization for type 'Api.Models.Workouts.WorkoutRequest' was missing required properties including: 'totalDurationMinutes'.");
     }
 
     [Test]
     public async Task WhenWorkoutDatePropertyIsMissing_ShouldReturnBadRequest()
     {
+        string userId = Guid.NewGuid().ToString();
         var exercises = new[] { new { id = Guid.CreateVersion7(), sets = new[] { new { repetitions = 10, weightKg = 0.0 } } } };
         var request = new { exercises, notes = DefaultNotes, totalDurationMinutes = DefaultDuration };
-        var response = await PostWorkoutAnon(request);
+        var response = await PostWorkoutAnon(request, userId);
         await AssertValidationError(response, "$", "JSON deserialization for type 'Api.Models.Workouts.WorkoutRequest' was missing required properties including: 'workoutDate'.");
     }
 
     [Test]
     public async Task WhenWorkoutDateIsInTheFuture_ShouldReturnBadRequest()
     {
+        string userId = Guid.NewGuid().ToString();
         var futureDate = DateTime.UtcNow.AddHours(1);
         var request = WorkoutRequestBuilder.Create()
             .WithExercises(ExerciseBuilder.Create().Build())
             .WithWorkoutDate(futureDate)
             .Build();
 
-        var response = await PostWorkout(request);
+        var response = await PostWorkout(request, userId);
         await AssertValidationError(response, "WorkoutDate", "Workout date cannot be in the future.");
     }
 
@@ -95,46 +101,51 @@ public class POSTWorkoutTests : BaseTestFixture
     [Test]
     public async Task WhenExerciseIdIsNull_ShouldReturnBadRequest()
     {
+        string userId = Guid.NewGuid().ToString();
         var request = new { exercises = new[] { new { id = (Guid?)null, sets = new[] { new { repetitions = 10, weightKg = 0.0 } } } }, notes = DefaultNotes, totalDurationMinutes = DefaultDuration, workoutDate = DefaultWorkoutDate };
-        var response = await PostWorkoutAnon(request);
+        var response = await PostWorkoutAnon(request, userId);
         await AssertValidationError(response, "$.exercises[0].id", "The JSON value could not be converted to System.Guid.");
     }
 
     [Test]
     public async Task WhenExerciseSetsIsNull_ShouldReturnBadRequest()
     {
+        string userId = Guid.NewGuid().ToString();
         var request = new { exercises = new[] { new { id = Guid.CreateVersion7(), sets = (WorkoutSet[]?)null } }, notes = DefaultNotes, totalDurationMinutes = DefaultDuration, workoutDate = DefaultWorkoutDate };
-        var response = await PostWorkoutAnon(request);
+        var response = await PostWorkoutAnon(request, userId);
         await AssertValidationError(response, "Exercises[0].Sets", "The Sets field is required.");
     }
 
     [Test]
     public async Task WhenExerciseSetsIsEmpty_ShouldReturnBadRequest()
     {
+        string userId = Guid.NewGuid().ToString();
         var exercises = new[] { ExerciseBuilder.Create().WithEmptySets().Build() };
         var request = WorkoutRequestBuilder.Create().WithExercises(exercises).Build();
-        var response = await PostWorkout(request);
+        var response = await PostWorkout(request, userId);
         await AssertValidationError(response, "Exercises[0].Sets", "The field Sets must be a string or array type with a minimum length of '1'.");
     }
 
     [Test]
     public async Task WhenMultipleExercisesAndOneHasInvalidSets_ShouldReturnBadRequest()
     {
+        string userId = Guid.NewGuid().ToString();
         var exercises = new[]
         {
             ExerciseBuilder.Create().Build(),
             ExerciseBuilder.Create().WithEmptySets().Build()
         };
         var request = WorkoutRequestBuilder.Create().WithExercises(exercises).Build();
-        var response = await PostWorkout(request);
+        var response = await PostWorkout(request, userId);
         await AssertValidationError(response, "Exercises[1].Sets", "The field Sets must be a string or array type with a minimum length of '1'.");
     }
 
     [Test]
     public async Task WhenMultipleExercisesAndOneHasNullId_ShouldReturnBadRequest()
     {
+        string userId = Guid.NewGuid().ToString();
         var request = new { exercises = new[] { new { id = (Guid?)Guid.CreateVersion7(), sets = new[] { new { repetitions = 10, weightKg = 0.0 } } }, new { id = (Guid?)null, sets = new[] { new { repetitions = 10, weightKg = 0.0 } } } }, notes = DefaultNotes, totalDurationMinutes = DefaultDuration, workoutDate = DefaultWorkoutDate };
-        var response = await PostWorkoutAnon(request);
+        var response = await PostWorkoutAnon(request, userId);
         await AssertValidationError(response, "$.exercises[1].id", "The JSON value could not be converted to System.Guid.");
     }
 
@@ -145,10 +156,11 @@ public class POSTWorkoutTests : BaseTestFixture
     [Test]
     public async Task WhenSetRepetitionsIsNull_ShouldReturnBadRequest()
     {
+        string userId = Guid.NewGuid().ToString();
         var set = new { repetitions = (int?)null, weightKg = 0.0 };
         var exercises = new[] { new { id = Guid.CreateVersion7(), sets = new[] { set } } };
         var request = new { exercises, notes = DefaultNotes, totalDurationMinutes = DefaultDuration, workoutDate = DefaultWorkoutDate };
-        var response = await PostWorkoutAnon(request);
+        var response = await PostWorkoutAnon(request, userId);
         await AssertValidationError(response, "$.exercises[0].sets[0].repetitions", "The JSON value could not be converted to System.Int32.");
     }
 
@@ -156,55 +168,61 @@ public class POSTWorkoutTests : BaseTestFixture
     [TestCase(-5, "The field Repetitions must be between 1 and 2147483647.")]
     public async Task WhenSetRepetitionsIsInvalid_ShouldReturnBadRequest(int repetitions, string expectedError)
     {
+        string userId = Guid.NewGuid().ToString();
         var set = WorkoutSetBuilder.Create().WithRepetitions(repetitions).Build();
         var exercises = new[] { ExerciseBuilder.Create().WithSets(set).Build() };
         var request = WorkoutRequestBuilder.Create().WithExercises(exercises).Build();
-        var response = await PostWorkout(request);
+        var response = await PostWorkout(request, userId);
         await AssertValidationError(response, "Exercises[0].Sets[0].Repetitions", expectedError);
     }
 
     [Test]
     public async Task WhenSetWeightKgIsNull_ShouldReturnBadRequest()
     {
+        string userId = Guid.NewGuid().ToString();
         var set = new { repetitions = 10, weightKg = (double?)null };
         var exercises = new[] { new { id = Guid.CreateVersion7(), sets = new[] { set } } };
         var request = new { exercises, notes = DefaultNotes, totalDurationMinutes = DefaultDuration, workoutDate = DefaultWorkoutDate };
-        var response = await PostWorkoutAnon(request);
+        var response = await PostWorkoutAnon(request, userId);
         await AssertValidationError(response, "$.exercises[0].sets[0].weightKg", "The JSON value could not be converted to System.Double.");
     }
 
     [Test]
     public async Task WhenSetWeightKgIsNegative_ShouldReturnBadRequest()
     {
+        string userId = Guid.NewGuid().ToString();
         var set = WorkoutSetBuilder.Create().WithWeightKg(-5.0).Build();
         var exercises = new[] { ExerciseBuilder.Create().WithSets(set).Build() };
         var request = WorkoutRequestBuilder.Create().WithExercises(exercises).Build();
-        var response = await PostWorkout(request);
+        var response = await PostWorkout(request, userId);
         await AssertValidationError(response, "Exercises[0].Sets[0].WeightKg", "The field WeightKg must be between 0 and 1.7976931348623157E+308.");
     }
 
     [Test]
     public async Task WhenMultipleSetsAndOneHasInvalidRepetitions_ShouldReturnBadRequest()
     {
+        string userId = Guid.NewGuid().ToString();
         var validSet = WorkoutSetBuilder.Create().WithRepetitions(10).Build();
         var invalidSet = WorkoutSetBuilder.Create().WithRepetitions(0).Build();
         var exercises = new[] { ExerciseBuilder.Create().WithSets(validSet, invalidSet).Build() };
         var request = WorkoutRequestBuilder.Create().WithExercises(exercises).Build();
-        var response = await PostWorkout(request);
+        var response = await PostWorkout(request, userId);
         await AssertValidationError(response, "Exercises[0].Sets[1].Repetitions", "The field Repetitions must be between 1 and 2147483647.");
     }
 
     [Test]
     public async Task WhenMultipleSetsAndOneHasNullWeight_ShouldReturnBadRequest()
     {
+        string userId = Guid.NewGuid().ToString();
         var request = new { exercises = new[] { new { id = Guid.CreateVersion7(), sets = new[] { new { repetitions = 10, weightKg = (double?)10.0 }, new { repetitions = 10, weightKg = (double?)null } } } }, notes = DefaultNotes, totalDurationMinutes = DefaultDuration, workoutDate = DefaultWorkoutDate };
-        var response = await PostWorkoutAnon(request);
+        var response = await PostWorkoutAnon(request, userId);
         await AssertValidationError(response, "$.exercises[0].sets[1].weightKg", "The JSON value could not be converted to System.Double.");
     }
 
     [Test]
     public async Task WhenMultipleExercisesWithMultipleSetsAndOneSetIsInvalid_ShouldReturnBadRequest()
     {
+        string userId = Guid.NewGuid().ToString();
         var validSet1 = WorkoutSetBuilder.Create().WithRepetitions(10).Build();
         var validSet2 = WorkoutSetBuilder.Create().WithRepetitions(15).Build();
         var validSet3 = WorkoutSetBuilder.Create().WithRepetitions(20).Build();
@@ -218,7 +236,7 @@ public class POSTWorkoutTests : BaseTestFixture
             ExerciseBuilder.Create().WithSets(validSet4, validSet4).Build()
         };
         var request = WorkoutRequestBuilder.Create().WithExercises(exercises).WithDuration(60).Build();
-        var response = await PostWorkout(request);
+        var response = await PostWorkout(request, userId);
         await AssertValidationError(response, "Exercises[1].Sets[1].Repetitions", "The field Repetitions must be between 1 and 2147483647.");
     }
 
@@ -233,15 +251,17 @@ public class POSTWorkoutTests : BaseTestFixture
     [Test]
     public async Task WhenNoExercisesInDatabase_ShouldReturnBadRequest()
     {
+        string userId = Guid.NewGuid().ToString();
         var exercises = new[] { ExerciseBuilder.Create().Build() };
         var request = WorkoutRequestBuilder.Create().WithExercises(exercises).Build();
-        var response = await PostWorkout(request);
+        var response = await PostWorkout(request, userId);
         await AssertValidationError(response, "Exercises", "Exercises with IDs " + exercises[0].Id + " not found.");
     }
 
     [Test]
     public async Task WhenExerciseDoesNotExistInDatabase_ShouldReturnBadRequest()
     {
+        string userId = Guid.NewGuid().ToString();
         var pushupId = Guid.CreateVersion7();
         var squatsId = Guid.CreateVersion7();
         await SeedExercises((pushupId, "Pushups"), (squatsId, "Squats"));
@@ -255,7 +275,7 @@ public class POSTWorkoutTests : BaseTestFixture
             ExerciseBuilder.Create().WithId(missingId2).Build()
         };
         var request = WorkoutRequestBuilder.Create().WithExercises(exercises).Build();
-        var response = await PostWorkout(request);
+        var response = await PostWorkout(request, userId);
 
         var responseDetails = await GetErrorResponse(response);
         Assert.That(responseDetails?.Errors, Contains.Key("Exercises"));
@@ -269,13 +289,14 @@ public class POSTWorkoutTests : BaseTestFixture
     [Test]
     public async Task WhenSingleValidActivity_ShouldReturnCreated()
     {
+        string userId = Guid.NewGuid().ToString();
         var pushupId = Guid.CreateVersion7();
         await SeedExercises((pushupId, "Pushups"));
 
         var exercises = new[] { ExerciseBuilder.Create().WithId(pushupId).Build() };
         var request = WorkoutRequestBuilder.Create().WithExercises(exercises).Build();
 
-        var response = await PostWorkout(request);
+        var response = await PostWorkout(request, userId);
         Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.Created));
 
         var workoutInDb = await GetWorkoutFromDatabase();
@@ -291,6 +312,7 @@ public class POSTWorkoutTests : BaseTestFixture
     [Test]
     public async Task MultipleValidActivities_ShouldReturnCreated()
     {
+        string userId = Guid.NewGuid().ToString();
         var pushupId = Guid.CreateVersion7();
         var squatId = Guid.CreateVersion7();
         var plankId = Guid.CreateVersion7();
@@ -320,7 +342,7 @@ public class POSTWorkoutTests : BaseTestFixture
             .WithDuration(45)
             .Build();
 
-        var response = await PostWorkout(request);
+        var response = await PostWorkout(request, userId);
         Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.Created));
 
         var workoutInDb = await GetWorkoutFromDatabase();
@@ -359,7 +381,7 @@ public class POSTWorkoutTests : BaseTestFixture
             .FirstOrDefaultAsync();
     }
 
-    private void AssertActivitiesMatch(Infrastructure.Database.Tables.Workout workout, Api.Models.Workouts.Exercise[] noneRepeatedExercises, Api.Models.Workouts.Exercise[] repeatedExercises)
+    private void AssertActivitiesMatch(Infrastructure.Database.Tables.Workout workout, Exercise[] noneRepeatedExercises, Api.Models.Workouts.Exercise[] repeatedExercises)
     {
         foreach (var exercise in noneRepeatedExercises)
         {
@@ -408,17 +430,17 @@ public class POSTWorkoutTests : BaseTestFixture
 
     #endregion
 
-    private async Task<HttpResponseMessage> PostWorkout(WorkoutRequest request)
+    private async Task<HttpResponseMessage> PostWorkout(WorkoutRequest request, string userId)
     {
-        AddJWTTokenToRequest(Guid.NewGuid().ToString());
+        AddJWTTokenToRequest(userId);
         var json = JsonSerializer.Serialize(request);
         var content = new StringContent(json, System.Text.Encoding.UTF8, "application/json");
         return await client.PostAsync("/api/workouts", content);
     }
 
-    private async Task<HttpResponseMessage> PostWorkoutAnon(object request)
+    private async Task<HttpResponseMessage> PostWorkoutAnon(object request, string userId)
     {
-        AddJWTTokenToRequest(Guid.NewGuid().ToString());
+        AddJWTTokenToRequest(userId);
         var json = JsonSerializer.Serialize(request);
         var content = new StringContent(json, System.Text.Encoding.UTF8, "application/json");
         return await client.PostAsync("/api/workouts", content);

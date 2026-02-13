@@ -1,5 +1,4 @@
 using Core.AggregateRoots;
-using Core.Entities;
 using Core.Repositories;
 
 namespace Core.Services.Workouts;

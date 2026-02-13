@@ -12,9 +12,9 @@ public class GetWorkoutByIdQuery : IGetWorkoutByIdQuery
         _workoutRepository = workoutRepository;
     }
 
-    public async Task<Result<Workout>> ExecuteAsync(Guid workoutId, CancellationToken cancellationToken)
+    public async Task<Result<Workout>> ExecuteAsync(Guid workoutId, string userId, CancellationToken cancellationToken)
     {
-        var workout = await _workoutRepository.GetAsync(workoutId, cancellationToken);
+        var workout = await _workoutRepository.GetAsync(workoutId, userId, cancellationToken);
 
         if (workout is null)
         {

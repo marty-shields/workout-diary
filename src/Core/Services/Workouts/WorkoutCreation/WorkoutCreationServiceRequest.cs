@@ -4,6 +4,7 @@ namespace Core.Services.Workouts;
 
 public class WorkoutCreationServiceRequest
 {
+    public required string UserId { get; init; }
     public string? Notes { get; init; }
     public required int TotalDurationMinutes { get; init; }
     public required DateTimeOffset WorkoutDate { get; init; }
@@ -25,6 +26,7 @@ public class WorkoutCreationServiceRequest
         return new Workout
         {
             Id = Guid.CreateVersion7(),
+            UserId = UserId,
             Notes = Notes,
             TotalDurationMinutes = TotalDurationMinutes,
             WorkoutDate = WorkoutDate,

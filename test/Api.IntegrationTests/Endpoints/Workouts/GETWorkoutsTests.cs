@@ -14,7 +14,8 @@ public class GETWorkoutsTests : BaseTestFixture
     [Test]
     public async Task WhenNoWorkoutsExist_ShouldReturnEmptyList()
     {
-        var response = await GetWorkouts();
+        string userId = Guid.NewGuid().ToString();
+        var response = await GetWorkouts(userId);
         Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
 
         var workouts = await ParseWorkoutsResponse(response);
@@ -28,11 +29,12 @@ public class GETWorkoutsTests : BaseTestFixture
         var exerciseId = Guid.CreateVersion7();
         var workoutId = Guid.CreateVersion7();
         var workoutDate = DateTimeOffset.UtcNow.AddHours(-2);
+        string userId = Guid.NewGuid().ToString();
 
         await SeedExercise(exerciseId, "Pushups");
-        await SeedWorkoutWithSingleExercise(workoutId, exerciseId, workoutDate);
+        await SeedWorkoutWithSingleExercise(workoutId, userId, exerciseId, workoutDate);
 
-        var response = await GetWorkouts();
+        var response = await GetWorkouts(userId);
         Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
 
         var workouts = await ParseWorkoutsResponse(response);
@@ -63,15 +65,16 @@ public class GETWorkoutsTests : BaseTestFixture
         var workout1Date = DateTime.UtcNow.AddHours(-3);
         var workout2Date = DateTime.UtcNow.AddHours(-2);
         var workout3Date = DateTime.UtcNow.AddHours(-1);
+        string userId = Guid.NewGuid().ToString();
 
         await SeedExercise(exerciseId, "Pushups");
 
         // Create workouts in non-chronological order to test ordering
-        await SeedWorkoutWithSingleExercise(workout2Id, exerciseId, workout2Date, "Workout 2");
-        await SeedWorkoutWithSingleExercise(workout1Id, exerciseId, workout1Date, "Workout 1");
-        await SeedWorkoutWithSingleExercise(workout3Id, exerciseId, workout3Date, "Workout 3");
+        await SeedWorkoutWithSingleExercise(workout2Id, userId, exerciseId, workout2Date, "Workout 2");
+        await SeedWorkoutWithSingleExercise(workout1Id, userId, exerciseId, workout1Date, "Workout 1");
+        await SeedWorkoutWithSingleExercise(workout3Id, userId, exerciseId, workout3Date, "Workout 3");
 
-        var response = await GetWorkouts();
+        var response = await GetWorkouts(userId);
         Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
 
         var workouts = await ParseWorkoutsResponse(response);
@@ -97,12 +100,13 @@ public class GETWorkoutsTests : BaseTestFixture
         var squatsId = Guid.CreateVersion7();
         var workoutId = Guid.CreateVersion7();
         var workoutDate = DateTime.UtcNow.AddHours(-1);
+        string userId = Guid.NewGuid().ToString();
 
         await SeedExercise(pushupsId, "Pushups");
         await SeedExercise(squatsId, "Squats");
-        await SeedWorkoutWithMultipleExercisesAndSets(workoutId, pushupsId, squatsId, workoutDate);
+        await SeedWorkoutWithMultipleExercisesAndSets(workoutId, userId, pushupsId, squatsId, workoutDate);
 
-        var response = await GetWorkouts();
+        var response = await GetWorkouts(userId);
         Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
 
         var workouts = await ParseWorkoutsResponse(response);
@@ -134,9 +138,9 @@ public class GETWorkoutsTests : BaseTestFixture
 
     #region Helper Methods
 
-    private async Task<HttpResponseMessage> GetWorkouts()
+    private async Task<HttpResponseMessage> GetWorkouts(string userId)
     {
-        AddJWTTokenToRequest(Guid.NewGuid().ToString());
+        AddJWTTokenToRequest(userId);
         return await client.GetAsync("/api/workouts");
     }
 
@@ -157,7 +161,7 @@ public class GETWorkoutsTests : BaseTestFixture
         await db.SaveChangesAsync();
     }
 
-    private async Task SeedWorkoutWithSingleExercise(Guid workoutId, Guid exerciseId, DateTimeOffset workoutDate, string notes = "Single Exercise Workout")
+    private async Task SeedWorkoutWithSingleExercise(Guid workoutId, string userId, Guid exerciseId, DateTimeOffset workoutDate, string notes = "Single Exercise Workout")
     {
         using var scope = factory.Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<WorkoutContext>();
@@ -165,6 +169,7 @@ public class GETWorkoutsTests : BaseTestFixture
         var workout = new Infrastructure.Database.Tables.Workout
         {
             Id = workoutId,
+            UserId = userId,
             Notes = notes,
             TotalDurationMinutes = 30,
             WorkoutDate = workoutDate
@@ -174,6 +179,7 @@ public class GETWorkoutsTests : BaseTestFixture
         {
             Id = Guid.CreateVersion7(),
             WorkoutId = workoutId,
+            WorkoutUserId = userId,
             ExerciseId = exerciseId,
             Repetitions = 10,
             WeightKg = 5.0
@@ -181,7 +187,7 @@ public class GETWorkoutsTests : BaseTestFixture
         await db.SaveChangesAsync();
     }
 
-    private async Task SeedWorkoutWithMultipleExercisesAndSets(Guid workoutId, Guid exercise1Id, Guid exercise2Id, DateTime workoutDate)
+    private async Task SeedWorkoutWithMultipleExercisesAndSets(Guid workoutId, string userId, Guid exercise1Id, Guid exercise2Id, DateTime workoutDate)
     {
         using var scope = factory.Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<WorkoutContext>();
@@ -189,6 +195,7 @@ public class GETWorkoutsTests : BaseTestFixture
         var workout = new Infrastructure.Database.Tables.Workout
         {
             Id = workoutId,
+            UserId = userId,
             Notes = "Multiple Exercises Workout",
             TotalDurationMinutes = 60,
             WorkoutDate = workoutDate
@@ -201,6 +208,7 @@ public class GETWorkoutsTests : BaseTestFixture
         {
             Id = Guid.CreateVersion7(),
             WorkoutId = workoutId,
+            WorkoutUserId = userId,
             ExerciseId = exercise1Id,
             Repetitions = 10,
             WeightKg = 5.0
@@ -209,6 +217,7 @@ public class GETWorkoutsTests : BaseTestFixture
         {
             Id = Guid.CreateVersion7(),
             WorkoutId = workoutId,
+            WorkoutUserId = userId,
             ExerciseId = exercise1Id,
             Repetitions = 8,
             WeightKg = 7.5
@@ -219,6 +228,7 @@ public class GETWorkoutsTests : BaseTestFixture
         {
             Id = Guid.CreateVersion7(),
             WorkoutId = workoutId,
+            WorkoutUserId = userId,
             ExerciseId = exercise2Id,
             Repetitions = 12,
             WeightKg = 20.0
@@ -227,6 +237,7 @@ public class GETWorkoutsTests : BaseTestFixture
         {
             Id = Guid.CreateVersion7(),
             WorkoutId = workoutId,
+            WorkoutUserId = userId,
             ExerciseId = exercise2Id,
             Repetitions = 10,
             WeightKg = 25.0
@@ -235,6 +246,7 @@ public class GETWorkoutsTests : BaseTestFixture
         {
             Id = Guid.CreateVersion7(),
             WorkoutId = workoutId,
+            WorkoutUserId = userId,
             ExerciseId = exercise2Id,
             Repetitions = 8,
             WeightKg = 30.0
